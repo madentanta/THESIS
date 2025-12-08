@@ -28,20 +28,6 @@ This repository contains a preprocessing script that converts the raw PlantAdvis
 
 ---
 
-### ✨ What the Script Does
-
-- Loads an Excel dataset (header starting on row 2)
-- Fills missing values for:
-  - `Latitude`
-  - `Longitude`
-- Automatically drops unwanted columns if present:
-  - `Nama Daerah`
-  - `Evidence`
-- Detects all categorical columns and applies `LabelEncoder`
-- Saves the cleaned result into a `.csv` file
-
----
-
 ### 📦 Requirements
 
 Install dependencies:
