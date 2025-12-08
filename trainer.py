@@ -418,3 +418,9 @@ if __name__ == "__main__":
     print(f'  Loss: {test_metrics["loss"]:.4f}')
     if test_metrics['accuracy'] is not None:
         print(f'  Accuracy: {test_metrics["accuracy"]:.2%}')
+
+    # Save metadata for inference
+    import pickle
+    with open('metadata.pkl', 'wb') as f:
+        pickle.dump(metadata, f)
+    print("Metadata saved to metadata.pkl")

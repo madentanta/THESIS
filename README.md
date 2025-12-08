@@ -207,10 +207,87 @@ best_hopular_model.pt
 ```
 
 
+---
 
+## 🤖 Hopular Inference / Prediction
 
+This repository includes a complete inference module for making predictions with trained Hopular models.
 
+---
 
+### 📋 Requirements for Inference
 
+After training, you need two files:
+- `best_hopular_model.pt` - Trained model weights
+- `metadata.pkl` - Preprocessing metadata (scalers, encoders, etc.)
 
+These are automatically saved during training.
 
+---
+
+### 🚀 How to Make Predictions
+
+#### Method 1: Direct API Use
+```python
+from inference import HopularInference
+
+# Load the trained model and metadata
+hopular_inf = HopularInference(
+    model_path='best_hopular_model.pt',
+    metadata_path='metadata.pkl'
+)
+
+# Prepare your input data (must match training format)
+import pandas as pd
+new_data = pd.DataFrame({
+    # Your feature columns here with new values
+})
+
+# Make predictions
+predictions = hopular_inf.predict(new_data)
+print(predictions)
+```
+
+#### Method 2: From CSV File
+```bash
+python inference.py --input_file new_data.csv --output_file predictions.csv
+```
+
+#### Method 3: Command Line Interface
+```bash
+python inference.py \\
+  --model_path best_hopular_model.pt \\
+  --metadata_path metadata.pkl \\
+  --input_file data.csv \\
+  --output_file results.csv \\
+  --target_column Tanaman  # optional: exclude target column
+```
+
+---
+
+### 💡 Inference Arguments
+| Argument | Type | Required | Description |
+|----------|------|----------|-------------|
+| `--model_path` | str | ✖ | Path to model checkpoint (default: `best_hopular_model.pt`) |
+| `--metadata_path` | str | ✖ | Path to metadata file (default: `metadata.pkl`) |
+| `--input_file` | str | ✔ | Input CSV file for prediction |
+| `--output_file` | str | ✖ | Output file for predictions (default: `predictions.csv`) |
+| `--target_column` | str | ✖ | Target column to exclude from prediction |
+| `--device` | str | ✖ | Device for inference (`cpu` or `cuda`, auto by default) |
+
+---
+
+### 📊 Expected Input Format
+
+Your new data must have the same features and format as the training data:
+- Same column names and order
+- Same data types
+- Categorical values should be from the same set as training (unknown values will be mapped to known ones)
+
+---
+
+### ✅ Output
+
+The inference returns:
+- **Classification**: Predicted class labels
+- **CSV output**: Input data with additional `prediction` column

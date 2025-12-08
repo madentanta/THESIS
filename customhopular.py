@@ -622,6 +622,8 @@ def load_and_preprocess_csv(csv_path: str,
     X = df.drop(columns=[target_column])
     y = df[target_column]
 
+    original_features = list(X.columns)
+
     # Identify categorical columns
     if categorical_columns is None:
         categorical_columns = X.select_dtypes(include=['object', 'category']).columns.tolist()
@@ -652,7 +654,6 @@ def load_and_preprocess_csv(csv_path: str,
         y = y.values.astype(np.float32)
         print(f"Task: Regression")
 
-    # Convert to numpy
     X_values = X.values.astype(np.float32)
 
     # For classification, remove rare classes if needed
@@ -668,9 +669,9 @@ def load_and_preprocess_csv(csv_path: str,
         # Apply the mapping to re-encode all the target values
         y = np.array([label_map[old_label] for old_label in y])
 
-    # Standardize
     scaler = StandardScaler()
-    X_values = scaler.fit_transform(X_values)
+    scaler.fit(X_values)
+    X_values = scaler.transform(X_values).astype(np.float32)
 
     # Check if stratification is possible for classification
     stratify_train = None
@@ -763,7 +764,8 @@ def load_and_preprocess_csv(csv_path: str,
         'scaler': scaler,
         'label_encoders': label_encoders,
         'target_label_encoder': target_label_encoder,
-        'memory': torch.FloatTensor(X_train_full)
+        'memory': torch.FloatTensor(X_train_full),
+        'original_features': list(X.columns)
     }
 
     return X_train_full, X_val_full, X_test_full, y_train, y_val, y_test, metadata
