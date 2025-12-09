@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Advisor - Register</title>
+    <link rel="stylesheet" href="style.css"> 
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* --- CSS DARI KODE SEBELUMNYA --- */
+        .input-invalid {
+            border: 2px solid #dc3545 !important;
+        }
+        .input-valid {
+            border: 2px solid #28a745 !important;
+        }
+        .error-msg {
+            color: #dc3545; 
+            font-size: 13px;
+            margin: 4px 0 10px 0;
+            padding: 0;
+            min-height: 15px; 
+            line-height: 15px;
+        }
+
+        /* --- CSS POPUP UMUM (Fixed Position) --- */
+        .popup-fixed{
+            position:fixed;
+            top:20px;
+            right:20px;
+            width:250px;
+            height:auto;
+            z-index:9999;
+            border-radius:8px; 
+            padding:10px 15px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            font-family: 'Inter', sans-serif;
+            text-align: left; 
+            opacity: 0;
+            transform: translateX(120%);
+            display: none; 
+            transition: transform 0.4s ease-out, opacity 0.4s ease-out; /* Tambahkan transisi */
+        }
+
+        .popup-fixed h3{
+            margin-top:0;
+            margin-bottom:2px;
+            font-size:14px; 
+            font-weight: 800;
+        }
+
+        .popup-fixed p{
+            margin:0;
+            font-size:12px; 
+            color:#555;
+            line-height: 1.4;
+        }
+        
+        /* Gaya Khusus untuk SUKSES */
+        .popup-success{
+            background: #f0fff0; 
+            border: 1px solid #28a745; 
+        }
+        .popup-success h3{
+            color:#28a745;
+        }
+        .popup-success p.verification-info {
+            margin-top: 5px;
+            font-size: 11px; 
+            color: #777;
+        }
+
+        /* Gaya Khusus untuk ERROR */
+        .popup-error{
+            background: #fff0f0; 
+            border: 1px solid #dc3545; 
+        }
+        .popup-error h3{
+            color:#dc3545;
+        }
+
+        /* Gaya Khusus untuk PROCESSING/INFO */
+        .popup-info { 
+            background: #f0f8ff; 
+            border: 1px solid #17a2b8; 
+        }
+        .popup-info h3{
+            color: #17a2b8;
+        }
+
+
+        @keyframes slideInFromRight {
+            from {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="reg-body">
+
+<div class="reg-overlay">
+    <div class="reg-card">
+        <div class="reg-header">
+            <h2 class="reg-brand">Plant Advisor</h2>
+            <p class="reg-login-link">Sudah Punya Akun? <a href="login.html">Login</a></p>
+        </div>
+        <h1 class="reg-title">Register</h1>
+
+        <form id="registrationForm" action="#" method="post">
+            <label for="fullname">Nama Lengkap</label>
+            <input id="fullname" type="text" name="fullname" placeholder="Masukan Nama Lengkap" required>
+            <p id="fullnameError" class="error-msg"></p> 
+
+            <div class="reg-row">
+                <div class="reg-col">
+                    <label for="username">Username</label>
+                    <input id="username" type="text" name="username" placeholder="Masukan Username" required>
+                    <p id="usernameError" class="error-msg"></p> 
+                </div>
+                <div class="reg-col">
+                    <label for="email">Email</label>
+                    <input id="email" type="email" name="email" placeholder="Masukan Email" required>
+                    <p id="emailError" class="error-msg"></p> 
+                </div>
+            </div>
+
+            <label for="password">Password</label>
+            <input id="password" type="password" name="password" placeholder="Masukan Password" required>
+            <p id="passError" class="error-msg"></p> 
+
+            <button type="submit" class="reg-btn">Register</button>
+        </form>
+    </div>
+</div>
+
+<div class="popup-fixed popup-success" id="successPopup">
+    <h3>Pendaftaran Berhasil! 📧</h3>
+    <p id="popupMessage">Akun berhasil dibuat. **Cek email Anda** untuk verifikasi dan mengaktifkan akun.</p>
+    <p class="verification-info">Anda akan diarahkan ke halaman Login dalam <span id="countdown">4</span> detik.</p>
+</div>
+
+<div class="popup-fixed popup-info" id="processingPopup">
+    <h3>Pendaftaran Anda Sedang Diproses! ✨</h3>
+    <p>Mohon tunggu sebentar ya, kami sedang menyiapkan akun Anda.</p>
+</div>
+
+<div class="popup-fixed popup-error" id="errorPopup">
+    <h3>Gagal Memproses ❌</h3>
+    <p id="errorPopupMessage">Terjadi kesalahan server/koneksi.</p>
+</div>
+
+
+<script>
+    // URL BACKEND LOKAL LARAVEL DEFAULT
+    const API_REGISTER_URL = "http://127.0.0.1:8000/api/register"; 
+
+    // --- ELEMENT REFERENCES ---
+    const successPopup = document.getElementById('successPopup');
+    const processingPopup = document.getElementById('processingPopup');
+    const errorPopup = document.getElementById('errorPopup');
+    const errorPopupMessage = document.getElementById('errorPopupMessage');
+    const countdownEl = document.getElementById('countdown');
+    
+    // Helper function untuk membersihkan status visual input
+    function cleanInputStyles() {
+        ['fullname', 'username', 'email', 'password'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) input.classList.remove("input-valid", "input-invalid");
+            const errorEl = document.getElementById(id + "Error");
+            if (errorEl) errorEl.textContent = "";
+        });
+    }
+    
+    // Fungsi untuk menampilkan/menyembunyikan pop-up dengan animasi
+    function togglePopup(popupEl, show, title = '', message = '') {
+        if (show) {
+            // Sembunyikan semua popup lainnya dulu
+            successPopup.style.display = 'none';
+            processingPopup.style.display = 'none';
+            errorPopup.style.display = 'none';
+
+            if (title) popupEl.querySelector('h3').textContent = title;
+            if (message) {
+                if (popupEl.id === 'errorPopup') {
+                    errorPopupMessage.textContent = message;
+                } else {
+                    popupEl.querySelector('#popupMessage').innerHTML = message;
+                }
+            }
+
+            // Tampilkan dengan animasi
+            popupEl.style.display = 'block';
+            popupEl.style.animation = 'slideInFromRight 0.4s ease-out forwards';
+        } else {
+            // Sembunyikan
+            popupEl.style.animation = 'none';
+            popupEl.style.display = 'none';
+        }
+    }
+
+
+    document.getElementById("registrationForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        cleanInputStyles(); 
+
+        const passInput = document.getElementById("password");
+        const password = passInput.value;
+        let validationPassed = true;
+
+        const hasLetter = /[a-zA-Z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasSymbol = /[^a-zA-Z0-9]/.test(password);
+
+        let errorEl = document.getElementById("passError");
+        
+        // --- Validasi Front-End untuk Password ---
+        if (password.length < 5 || !hasLetter || !hasNumber || !hasSymbol) {
+            validationPassed = false;
+            errorEl.textContent = "Password harus min 5 karakter, mengandung huruf, angka, dan simbol.";
+            passInput.classList.add("input-invalid");
+        } 
+        
+        // --- Proses Kirim Data ke Back-End ---
+        if (validationPassed) {
+            const form = e.target;
+            const data = {
+                fullname: form.fullname.value,
+                username: form.username.value,
+                email: form.email.value,
+                password: form.password.value
+            };
+
+            const submitBtn = form.querySelector('.reg-btn');
+            const originalBtnText = submitBtn.textContent;
+            
+            submitBtn.textContent = "Processing...";
+            submitBtn.disabled = true;
+
+            // 1. TAMPILKAN NOTIFIKASI PROCESSING
+            togglePopup(processingPopup, true); 
+
+            try {
+                // Kirim data ke API Register
+                const response = await fetch(API_REGISTER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                let result;
+                try {
+                    result = await response.json();
+                } catch(err) {
+                    result = { message: `Gagal membaca respon server. Status: ${response.status} ${response.statusText}` };
+                }
+
+                // Sembunyikan notifikasi processing
+                togglePopup(processingPopup, false); 
+                
+                submitBtn.textContent = originalBtnText;
+                submitBtn.disabled = false;
+
+
+                if (response.ok && response.status === 201) {
+                    // 2. Pendaftaran Berhasil (Status 201 Created)
+                    
+                    // Gunakan pesan yang sangat jelas untuk instruksi verifikasi email
+                    const successMsg = "Kami telah mengirimkan tautan verifikasi ke email Anda. **Silakan cek folder Inbox/Spam** untuk mengaktifkan akun.";
+                    
+                    togglePopup(successPopup, true, "Pendaftaran Berhasil! 📧", successMsg);
+
+                    // Mulai countdown
+                    let count = 4;
+                    const interval = setInterval(() => {
+                        count--;
+                        countdownEl.textContent = count;
+                        if (count <= 0) {
+                            clearInterval(interval);
+                            window.location.href = "login.html"; 
+                        }
+                    }, 1000);
+
+                } else {
+                    // 3. Pendaftaran Gagal (Status 422 Validation Error atau 400/500 lainnya)
+                    
+                    if (response.status === 422 && result.errors) {
+                        
+                        const errors = result.errors;
+                        let specificErrorHandled = false;
+
+                        // Distribusikan error ke elemen yang sesuai
+                        ['fullname', 'username', 'email', 'password'].forEach(field => {
+                            const inputElement = document.getElementById(field);
+                            const errorElement = document.getElementById(field + "Error");
+
+                            if (errors[field]) {
+                                errorElement.textContent = errors[field].join(" | ");
+                                inputElement.classList.add("input-invalid");
+                                specificErrorHandled = true;
+                            } else {
+                                inputElement.classList.add("input-valid");
+                            }
+                        });
+                        
+                        if (!specificErrorHandled) {
+                             // Jika 422 tapi error tidak spesifik, tampilkan error umum di popup
+                             togglePopup(errorPopup, true, "Validasi Gagal", "Validasi server gagal, namun detail error tidak ditemukan.");
+                        }
+
+                    } else {
+                        // Untuk error non-validasi (400, 500, atau pesan khusus)
+                        const errorMsg = result.message || `Server merespon ${response.status} ${response.statusText}.`;
+                        togglePopup(errorPopup, true, "Pendaftaran Gagal", errorMsg);
+                    }
+                }
+
+            } catch (error) {
+                // 4. TANGANI ERROR KONEKSI
+                submitBtn.textContent = originalBtnText;
+                submitBtn.disabled = false;
+                togglePopup(processingPopup, false); 
+                console.error("Fetch Error:", error);
+                togglePopup(errorPopup, true, "Koneksi Gagal", "Koneksi gagal. Pastikan server Laravel Anda berjalan.");
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
