@@ -126,7 +126,7 @@
         }
 
         async function fetchRecommendation() {
-            const inputId = localStorage.getItem('input_id'); // FIX 🔥
+            const inputId = localStorage.getItem('last_input_id'); // FIX 🔥
             const resultContainer = document.getElementById('result-container');
             const loadingState = document.getElementById('loading-state');
             const errorState = document.getElementById('error-state');

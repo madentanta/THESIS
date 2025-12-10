@@ -53,21 +53,57 @@
         </section>
 
 <section class="tutorial-section" id="tutorial">
-    <a href="https://youtu.be/kM7x1K_uCoc?si=-dldbIDsSgLab-Zs" class="video-container-link" target="_blank">
-        <div class="video-thumb">
-            <img 
-                src="https://img.youtube.com/vi/kM7x1K_uCoc/hqdefault.jpg" 
-                alt="Thumbnail Video Tutorial: How Plants Grow" 
-            />
+    
+    <div class="carousel-title-container">
+        <h2>Video Tutorial</h2>
+        <p class="tutorial-desc">Belajar merawat tanaman jadi lebih mudah dengan video tutorial Plant Advisor.</p>
+    </div>
+
+    <div class="carousel-wrapper">
+        <button class="scroll-btn left" onclick="scrollVideos(-1)">&#10094;</button>
+
+        <div class="end-message">
+            <p><strong>Panduan Praktis:</strong> Dapatkan langkah mudah memantau dan menjaga kondisi pH, Suhu, dan Kelembaban tanah. Geser ke kiri untuk mengakses seluruh rangkaian video tutorial ini.</p>
         </div>
-        <div class="video-text">
-            <h2>Video Tutorial</h2>
+        <div class="video-carousel" id="videoCarousel">
             
-            <p>Belajar merawat tanaman jadi lebih mudah dengan video tutorial Plant Advisor.</p>
+            <div class="video-item">
+                <iframe 
+                    src="https://www.youtube.com/embed/kM7x1K_uCoc" 
+                    title="Video 1: Tumbuh Kembang Tanaman" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen
+                ></iframe>
+                <p class="video-caption">Video 1: Tumbuh Kembang Tanaman</p>
+            </div>
+
+            <div class="video-item">
+                <iframe 
+                    src="https://www.youtube.com/embed/NaFZwq22YB8" 
+                    title="Video 2: 15th UCL" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen
+                ></iframe>
+                <p class="video-caption">Video 2: Tutorial Mendapat UCL ke 15</p>
+            </div>
+
+            <div class="video-item">
+                <iframe 
+                    src="https://www.youtube.com/embed/JENpTmMQBQY" 
+                    title="Fourtwnty - Mangu ft. Charita Utami ( Official Lyric Video )" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen
+                ></iframe>
+                <p class="video-caption">Video 3: (Mangu - Fourtwnty)</p>
+            </div>
             
         </div>
-    </a>
-</section>
+        
+        <button class="scroll-btn right" onclick="scrollVideos(1)">&#10095;</button>
+    </div>
 </section>
 
         <section class="form-section" id="AII">
@@ -330,6 +366,108 @@ function validateKecamatan() {
     checkFormValidity();
 }
 
+// =========================================================================
+// === LOGIKA CAROUSEL INTERAKTIF (FOKUS SISI KIRI - TANPA LOOP) ===
+
+const videoCarousel = document.getElementById('videoCarousel');
+const videoItems = document.querySelectorAll('.video-item');
+const totalItems = videoItems.length;
+
+// Ambil tombol panah dan pesan akhir (Diperlukan untuk JS)
+const leftBtn = document.querySelector('.scroll-btn.left');
+const rightBtn = document.querySelector('.scroll-btn.right');
+const endMessage = document.querySelector('.end-message'); // TAMBAHAN: Ambil elemen pesan
+
+
+// --- FUNGSI UPDATE FOKUS/ACTIVE ---
+function updateActiveVideo() {
+    const scrollLeft = videoCarousel.scrollLeft;
+    
+    let closestItem = null;
+    let minDistance = Infinity;
+    
+    // FIX PADDING: SESUAIKAN DENGAN CSS PADDING-LEFT TERBARU (20px)
+    const containerPaddingLeft = 20; 
+
+    // Logika Deteksi Fokus Sisi Kiri Normal
+    videoItems.forEach((item) => {
+        // Koreksi posisi item: item.offsetLeft - padding kiri kontainer
+        const itemLeftCorrected = item.offsetLeft - containerPaddingLeft; 
+        const distance = Math.abs(itemLeftCorrected - scrollLeft);
+
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestItem = item;
+        }
+    });
+
+    // Terapkan kelas 'active' dan cek video terakhir
+    videoItems.forEach(item => item.classList.remove('active'));
+    let isLastVideoActive = false;
+
+    if (closestItem) {
+        closestItem.classList.add('active');
+        
+        // Cek apakah video yang aktif adalah video terakhir dalam daftar
+        if (closestItem === videoItems[totalItems - 1]) {
+            isLastVideoActive = true;
+        }
+    }
+    
+    // LOGIKA PESAN AKHIR: Tampilkan hanya jika video terakhir aktif
+    if (endMessage) {
+        if (isLastVideoActive) {
+            endMessage.style.opacity = 1; 
+            endMessage.style.visibility = 'visible';
+        } else {
+            endMessage.style.opacity = 0;
+            endMessage.style.visibility = 'hidden';
+        }
+    }
+}
+
+
+// --- FUNGSI SCROLL NORMAL (TANPA LOGIKA LOOP) ---
+function scrollVideos(direction) {
+    const item = videoCarousel.querySelector('.video-item');
+    if (!item) return; 
+    
+    // Margin total = 20px
+    const itemWidth = item.offsetWidth; 
+    const margin = 20; 
+    const scrollDistance = itemWidth + margin;
+    
+    // Gulir normal menggunakan scrollBy (akan otomatis berhenti di batas awal/akhir)
+    videoCarousel.scrollBy({
+        left: direction * scrollDistance, 
+        behavior: 'smooth'
+    });
+
+    // Panggil updateActiveVideo setelah scroll selesai
+    // Tambahkan delay yang lebih panjang (misal 500ms) untuk memastikan update Active
+    setTimeout(updateActiveVideo, 500); 
+}
+
+
+// === EVENT LISTENERS ===
+
+// 1. Deteksi scroll manual/touch
+videoCarousel.addEventListener('scroll', updateActiveVideo);
+
+// 2. Tambahkan event listener untuk tombol (Diperlukan karena Anda memanggil scrollVideos() dari HTML)
+if (leftBtn) {
+    leftBtn.addEventListener('click', () => scrollVideos(-1));
+}
+if (rightBtn) {
+    rightBtn.addEventListener('click', () => scrollVideos(1));
+}
+
+
+// 3. Inisialisasi tampilan awal
+window.addEventListener('load', () => {
+    videoCarousel.scrollTo({ left: 0, behavior: 'instant' }); 
+    updateActiveVideo(); 
+});
 
 // =========================================================================
 // === LOGIKA TAMPILAN, LOGOUT & GEOLOCATION ===
@@ -452,7 +590,7 @@ submitBtn.addEventListener("click", async function (e) {
             }
 
             const inputId = resultInput.input_id || resultInput.data?.input_id;
-            localStorage.setItem('last_input_id', inputId);
+            localStorage.setItem('input_id', inputId);
             
             submitBtn.textContent = "Data Tersimpan";
             

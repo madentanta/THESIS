@@ -1079,3 +1079,187 @@ footer {
     transform: scale(1.05);
     opacity: 0.9;
 }
+/* =========================================================================
+   1. STRUKTUR UTAMA DAN JUDUL
+   ========================================================================= */
+
+.tutorial-section {
+    padding: 60px 0;
+    text-align: center; 
+    background-color: #1a233c; 
+    color: white;
+}
+.tutorial-section h2, .tutorial-section p {
+    color: white;
+}
+.carousel-title-container {
+    max-width: 800px;
+    margin: 0 auto 30px auto; 
+}
+
+/* =========================================================================
+   2. CAROUSEL DAN SCROLL SNAP (FIX PADDING KIRI)
+   ========================================================================= */
+
+/* Kontainer Utama Carousel (Memosisikan tombol panah) */
+.carousel-wrapper {
+    position: relative;
+    max-width: 1200px; 
+    margin: 0 auto;
+    padding: 0; 
+    width: 90%; 
+    overflow: visible; 
+}
+
+/* Kontainer Gulir Video */
+.video-carousel {
+    display: flex;
+    overflow-x: scroll; 
+    scroll-behavior: smooth; 
+    padding-bottom: 20px; 
+    
+    scroll-snap-type: x mandatory; 
+    
+    /* FIX: PADDING KIRI 20PX untuk sejajar di bawah tombol kiri. */
+    padding: 0 520px 20px 20px; 
+    
+    /* Menyembunyikan Scrollbar */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.video-carousel::-webkit-scrollbar {
+    display: none;
+}
+
+/* =========================================================================
+   3. ITEM VIDEO (EFEK TIMBUL/SAMAR)
+   ========================================================================= */
+
+.video-item {
+    min-width: 500px; 
+    width: 500px;
+    flex-shrink: 0; 
+    
+    margin: 0 10px; 
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #333;
+    
+    /* Scroll Snap: Mengunci item di SISI KIRI (start) */
+    scroll-snap-align: start; 
+
+    /* Awalnya sedikit buram dan kecil (efek samar) */
+    transition: transform 0.4s ease, box-shadow 0.4s ease, opacity 0.4s ease;
+    opacity: 0.7; 
+    transform: scale(0.95); 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* KELAS AKTIF: Diterapkan oleh JavaScript */
+.video-item.active {
+    transform: scale(1); 
+    opacity: 1; 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); 
+}
+
+.video-item iframe {
+    width: 100%;
+    height: 281px; 
+    display: block;
+}
+.video-caption {
+    padding: 10px;
+    font-weight: 600;
+    font-size: 0.9em;
+    color: #eee;
+}
+
+/* =========================================================================
+   4. TOMBOL GULIR (FIX POSISI FINAL)
+   ========================================================================= */
+
+.scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.2); 
+    color: white;
+    border: 2px solid white; 
+    padding: 10px 15px;
+    cursor: pointer;
+    z-index: 20; 
+    border-radius: 50%;
+    font-size: 20px;
+    line-height: 1; 
+    transition: background 0.3s;
+}
+.scroll-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+.scroll-btn.left {
+    /* Mendorong tombol keluar 20px (memberi space) */
+    left: -20px; 
+}
+.scroll-btn.right {
+    /* MENDORONG MASUK KE KIRI 40PX */
+    right: 40px; 
+}
+
+/* =========================================================================
+   6. PESAN AKHIR CAROUSEL (PESAN INFORMATIF - UNTUK LAYAR LEBAR)
+   ========================================================================= */
+
+.end-message {
+    position: absolute;
+    /* FIX: Digeser lebih jauh ke KIRI (120px) agar tidak bertabrakan dengan tombol */
+    right: 120px; 
+    top: 50%;
+    transform: translateY(-50%);
+    
+    z-index: 5; 
+    
+    width: 250px; 
+    text-align: center;
+    color: #b0b8c9; 
+    font-size: 1.2em;
+    font-weight: 500;
+    
+    /* DEFAULT KEADAAN TERSEMBUNYI, DIKONTROL OLEH JS */
+    opacity: 0; 
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+/* =========================================================================
+   5. MEDIA QUERIES (Responsif)
+   ========================================================================= */
+@media (max-width: 1000px) {
+    /* Sembunyikan pesan di layar kecil agar tidak mengganggu tata letak responsif */
+    .end-message {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .video-item {
+        min-width: 85vw;
+        width: 85vw; 
+        margin: 0 10px;
+    }
+    .video-item iframe {
+        height: calc(85vw / 16 * 9); 
+    }
+    .video-carousel {
+        /* Sesuaikan padding kiri agar blank space terlihat (40px) */
+        padding: 0 85vw 20px 40px; 
+    }
+    .scroll-btn.left {
+        /* Kembali ke 0 untuk layar kecil */
+        left: 0; 
+    }
+    .scroll-btn.right {
+        /* Kembali ke 0 untuk layar kecil */
+        right: 0;
+    }
+}

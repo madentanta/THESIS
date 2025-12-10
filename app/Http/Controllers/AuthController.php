@@ -87,15 +87,73 @@ class AuthController extends Controller
         ], 401);
     }
 
-    // 🛑 CEK JIKA SEDANG DI-BANNED
-    if ($user->locked_until && Carbon::parse($user->locked_until)->isFuture()) {
-        $remaining = Carbon::parse($user->locked_until)->diffInSeconds(now());
+// 🛑 CEK JIKA SEDANG DI-BANNED
 
-        return response()->json([
-            "error" => "Locked",
-            "message" => "Akun diblokir sementara. Coba lagi dalam $remaining detik."
-        ], 423); // 423 Locked (status yang tepat)
+if ($user->locked_until) {
+
+    // --- Parse timestamp dari DB sebagai UTC lalu convert ke WIB ---
+$lockedUntil = Carbon::parse($user->locked_until, 'UTC')->setTimezone('Asia/Jakarta');
+$nowLocal    = Carbon::now('Asia/Jakarta');
+
+
+    // Jika waktu lockout masih di masa depan
+    if ($lockedUntil->isFuture()) {
+
+        // Hitung sisa detik (selalu angka positif)
+        $remainingSeconds = $nowLocal->diffInSeconds($lockedUntil);
+
+        // Jika waktu habis → reset lockout
+        if ($remainingSeconds <= 0) {
+
+            DB::table("user")->where("user_id", $user->user_id)->update([
+                "login_attempts" => 0,
+                "locked_until" => null,
+            ]);
+
+            // lanjut proses password check
+
+        } else {
+
+            // Format untuk menit & detik
+            $minutes = floor($remainingSeconds / 60);
+            $seconds = $remainingSeconds % 60;
+
+            $timeString = "";
+
+            if ($minutes > 0) {
+                $timeString .= "$minutes menit";
+                if ($seconds > 0) $timeString .= " ";
+            }
+
+            if ($seconds > 0 || $minutes === 0) {
+                $timeString .= "$seconds detik";
+            }
+
+            if ($timeString === "") {
+                $timeString = "beberapa saat";
+            }
+
+            // Return response 423 (Locked)
+            return response()->json([
+                "error" => "Locked",
+                "message" => "Akun diblokir sementara. Coba lagi dalam $timeString."
+            ], 423);
+        }
+
+    } else {
+
+        // Jika waktu lockout sudah lewat → reset
+        DB::table("user")->where("user_id", $user->user_id)->update([
+            "login_attempts" => 0,
+            "locked_until" => null,
+        ]);
+
+        // lanjut proses password check
     }
+}
+
+// Jika locked_until NULL → lanjut proses password check
+
 
     // 🛑 VALIDASI PASSWORD
     if (!Hash::check($req->password, $user->password_hash)) {
@@ -236,114 +294,126 @@ class AuthController extends Controller
 
 
     // FORGOT PASSWORD (Aman: Wajib Email Terverifikasi)
-    public function forgotPassword(Request $req)
-    {
-        $req->validate(["email" => "required|email"]);
+public function forgotPassword(Request $req)
+{
+    $req->validate(["email" => "required|email"]);
 
-        $user = DB::table("user")
-                    ->where("email", $req->email)
-                    // HANYA IZINKAN RESET JIKA EMAIL SUDAH TERVERIFIKASI
-                    ->whereNotNull('email_verified_at') 
-                    ->first();
+    $user = DB::table("user")
+                ->where("email", $req->email)
+                ->whereNotNull('email_verified_at')
+                ->first();
 
-        if (!$user) {
-            // Pesan generik agar tidak membocorkan status verifikasi atau keberadaan email
-            throw ValidationException::withMessages([
-                "email" => ["Email not found or not yet verified."]
-            ]);
-        }
-        
-        $token = base64_encode(random_bytes(50));
-
-        // Simpan token dan waktu pembuatan ke database
-        DB::table("user")->where("user_id", $user->user_id)->update([
-            "reset_token"         => $token,
-            "reset_token_created" => now()
+    if (!$user) {
+        throw ValidationException::withMessages([
+            "email" => ["Email not found or not yet verified."]
         ]);
-
-        // Tentukan link reset
-        // ⚠️ HARAP GANTI DENGAN ALAMAT FRONTEND ANDA!
-        $resetLink = "http://localhost:8000/reset-password.html?token=" . urlencode($token);
-        
-        // Definisikan isi email pengiriman link
-        $emailBody = 
-            "Halo,\n\n" .
-            "Kami menerima permintaan untuk mereset password akun Plant Advisor Anda.\n\n" .
-            "Silakan klik tautan di bawah ini untuk mengatur password baru Anda:\n\n" .
-            $resetLink . "\n\n" .
-            "Tautan ini hanya berlaku untuk waktu terbatas (3 menit).\n\n" . 
-            "Jika Anda tidak mengajukan permintaan ini, Anda dapat mengabaikan email ini dan password Anda akan tetap aman.\n\n" .
-            "Terima kasih,\n\n" .
-            "Tim Plant Advisor";
-
-        // Kirim email
-        Mail::raw(
-            $emailBody, 
-            function ($m) use ($req) {
-                $m->to($req->email)->subject("Reset Password | Plant Advisor");
-            }
-        );
-
-        return ["message" => "Reset password email sent"];
     }
+
+    // 1. Generate raw token (dipakai user di email)
+    $rawToken = base64_encode(random_bytes(50));
+
+    // 2. Hash token dengan SHA256 untuk disimpan ke DB
+    $hashedToken = hash("sha256", $rawToken);
+
+    // 3. Simpan hashed token ke database
+    DB::table("user")->where("user_id", $user->user_id)->update([
+        "reset_token"         => $hashedToken,
+        "reset_token_created" => now()
+    ]);
+
+    // 4. Link reset (raw token, email tetap sama)
+    $resetLink = "http://localhost:8000/reset-password.html?token=" . urlencode($rawToken);
+
+    // 5. Email tetap sama persis
+    $emailBody = 
+        "Halo,\n\n" .
+        "Kami menerima permintaan untuk mereset password akun Plant Advisor Anda.\n\n" .
+        "Silakan klik tautan di bawah ini untuk mengatur password baru Anda:\n\n" .
+        $resetLink . "\n\n" .
+        "Tautan ini hanya berlaku untuk waktu terbatas (3 menit).\n\n" . 
+        "Jika Anda tidak mengajukan permintaan ini, Anda dapat mengabaikan email ini dan password Anda akan tetap aman.\n\n" .
+        "Terima kasih,\n\n" .
+        "Tim Plant Advisor";
+
+    Mail::raw(
+        $emailBody, 
+        function ($m) use ($req) {
+            $m->to($req->email)->subject("Reset Password | Plant Advisor");
+        }
+    );
+
+    return ["message" => "Reset password email sent"];
+}
+
 
 
     // RESET PASSWORD
-    public function resetPassword(Request $req)
-    {
-        $req->validate([
-            "token" => "required",
-            "password" => [
-                "required",
-                "min:5",
-                "regex:/[a-zA-Z]/",
-                "regex:/[0-9]/",
-                "regex:/[^a-zA-Z0-9]/"
-            ]
-        ]);
+public function resetPassword(Request $req)
+{
+    $req->validate([
+        "token" => "required",
+        "password" => [
+            "required",
+            "min:5",
+            "regex:/[a-zA-Z]/",
+            "regex:/[0-9]/",
+            "regex:/[^a-zA-Z0-9]/"
+        ]
+    ]);
 
-        $user = DB::table("user")->where("reset_token", $req->token)->first();
+    // 1. Hash token yang diterima dari user
+    $hashedToken = hash("sha256", $req->token);
 
-        if (!$user) {
-            return response()->json(["error" => "Invalid token"], 400);
-        }
+    // 2. Cocokkan dengan DB
+    $user = DB::table("user")->where("reset_token", $hashedToken)->first();
 
-        // Cek Kedaluwarsa Token (3 Menit)
-        if (Carbon::parse($user->reset_token_created)->addMinutes(3)->lt(now())) {
-            return response()->json(["error" => "Token expired"], 400);
-        }
-        
-        // Cek Password Baru TIDAK BOLEH SAMA dengan Password Lama
-        if (Hash::check($req->password, $user->password_hash)) {
-            return response()->json([
-                "error" => "Security Policy Violation",
-                "message" => "Password baru tidak boleh sama dengan password lama."
-            ], 400);
-        }
-
-        // Update Password dan hapus token
-        DB::table("user")->where("user_id", $user->user_id)->update([
-            "password_hash"         => Hash::make($req->password),
-            "reset_token"           => null,
-            "reset_token_created"   => null
-        ]);
-
-        // Kirim Email Notifikasi Password Berhasil Diubah
-        Mail::raw(
-            "Halo,\n\n" .
-            "Password akun Plant Advisor Anda telah berhasil diubah.\n\n" .
-            "Jika Anda melakukan perubahan ini, Anda dapat mengabaikan email ini.\n\n" .
-            "Jika Anda TIDAK melakukan perubahan ini, segera hubungi layanan pelanggan kami atau coba reset password Anda lagi.\n\n" .
-            "Terima kasih,\n\n" .
-            "Tim Plant Advisor",
-
-            function ($m) use ($user) {
-                $m->to($user->email)->subject("Notifikasi: Password Berhasil Diubah");
-            }
-        );
-
-        return ["message" => "Password reset successfully"];
+    if (!$user) {
+        return response()->json(["error" => "Invalid token"], 400);
     }
+
+    // 3. Cek kedaluwarsa (TTL = 3 menit)
+    if (Carbon::parse($user->reset_token_created)->addMinutes(3)->lt(now())) {
+
+        // Hapus token expired
+        DB::table("user")->where("user_id", $user->user_id)->update([
+            "reset_token" => null,
+            "reset_token_created" => null
+        ]);
+
+        return response()->json(["error" => "Token expired"], 400);
+    }
+
+    // 4. Password baru tidak boleh sama dengan lama
+    if (Hash::check($req->password, $user->password_hash)) {
+        return response()->json([
+            "error" => "Security Policy Violation",
+            "message" => "Password baru tidak boleh sama dengan password lama."
+        ], 400);
+    }
+
+    // 5. Update password & hapus token (single use)
+    DB::table("user")->where("user_id", $user->user_id)->update([
+        "password_hash"         => Hash::make($req->password),
+        "reset_token"           => null,
+        "reset_token_created"   => null
+    ]);
+
+    // 6. Notifikasi email (tetap sama)
+    Mail::raw(
+        "Halo,\n\n" .
+        "Password akun Plant Advisor Anda telah berhasil diubah.\n\n" .
+        "Jika Anda melakukan perubahan ini, Anda dapat mengabaikan email ini.\n\n" .
+        "Jika Anda TIDAK melakukan perubahan ini, segera hubungi layanan pelanggan kami atau coba reset password Anda lagi.\n\n" .
+        "Terima kasih,\n\n" .
+        "Tim Plant Advisor",
+        function ($m) use ($user) {
+            $m->to($user->email)->subject("Notifikasi: Password Berhasil Diubah");
+        }
+    );
+
+    return ["message" => "Password reset successfully"];
+}
+
     
     // GET USER STATUS (Optional, untuk mengecek status login/verifikasi)
     public function getUserStatus(Request $req)
