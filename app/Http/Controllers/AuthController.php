@@ -41,8 +41,8 @@ class AuthController extends Controller
             "created_at"            => now(),
         ], 'user_id'); 
 
-        // 2. KIRIM EMAIL VERIFIKASI
-        // ⚠️ HARAP GANTI "http://localhost:8000" DENGAN ALAMAT DOMAIN API YANG BENAR!
+        //  KIRIM EMAIL VERIFIKASI
+        // 
         $verificationLink = "http://localhost:8000/api/verify-email?token=" . urlencode($verificationToken);
         
         $emailBody = 
@@ -87,7 +87,7 @@ class AuthController extends Controller
         ], 401);
     }
 
-// 🛑 CEK JIKA SEDANG DI-BANNED
+
 
 if ($user->locked_until) {
 
@@ -184,7 +184,7 @@ $nowLocal    = Carbon::now('Asia/Jakarta');
         ], 401);
     }
 
-    // 🟢 JIKA PASSWORD BENAR → Reset attempts
+    // reset attempts
     DB::table("user")->where("user_id", $user->user_id)->update([
         "login_attempts" => 0,
         "locked_until" => null,
