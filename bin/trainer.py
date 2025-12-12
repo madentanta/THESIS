@@ -295,7 +295,7 @@ class HopularTrainer:
 def create_data_loaders(X_train, X_val, X_test, y_train, y_val, y_test,
                        metadata, batch_size=32):
     """Create PyTorch data loaders"""
-    from customhopular import TabularDataset
+    from bin.customhopular import TabularDataset
 
     # Target indices (last feature is always the target)
     target_indices = metadata['target_discrete'] + metadata['target_numeric']
@@ -326,7 +326,7 @@ def create_data_loaders(X_train, X_val, X_test, y_train, y_val, y_test,
 if __name__ == "__main__":
     import argparse
     import torch
-    from customhopular import load_and_preprocess_csv, Hopular
+    from bin.customhopular import load_and_preprocess_csv, Hopular
 
     parser = argparse.ArgumentParser(description="Train Hopular on a CSV dataset")
 

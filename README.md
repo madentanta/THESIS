@@ -17,12 +17,336 @@ Hopular is a deep learning architecture based on continuous modern Hopfield netw
 Make sure you have the following prerequisites installed:
 
 ```bash
-pip install torch scikit-learn pandas numpy
-```
+pip install -r requirements.txt
+---
+
+## 🗄️ Fetching Data from Supabase
+
+This repository includes utilities to fetch data directly from a Supabase database and convert it to CSV format for use in the Hopular pipeline.
 
 ---
 
-## 🌱 PlantAdvisor Dataset Preprocessing
+### 🔌 Supabase Connection Setup
+
+1. Get your Supabase credentials:
+   - Project URL (e.g., `https://xxxxx.supabase.co`)
+   - API key (either anon key or service role key)
+
+2. Install the Supabase client:
+```bash
+pip install supabase
+```
+
+3. Ensure your Supabase table is accessible (public schema and RLS policies permitting)
+
+### 🚀 How to Fetch Data from Supabase
+
+#### Command Line Usage:
+```bash
+python fetch_from_supabase.py --url YOUR_SUPABASE_URL --key YOUR_SUPABASE_KEY --table TABLE_NAME
+```
+
+#### Arguments:
+| Argument | Type | Required | Description |
+|----------|------|----------|-------------|
+| `--url` | str | ✅ | Your Supabase project URL |
+| `--key` | str | ✅ | Your Supabase API key (anon or service role) |
+| `--table` | str | ✅ | Name of the table to fetch |
+| `--output` | str | ❌ | Output CSV filename (default: `supabase_data.csv`) |
+| `--filters` | str | ❌ | Filters in format: `col1.eq.value,col2.gt.100` |
+| `--limit` | int | ❌ | Row limit |
+| `--preview` | flag | ❌ | Print first few rows |
+
+#### Example Commands:
+
+Fetch entire table:
+```bash
+python fetch_from_supabase.py --url https://myproject.supabase.co --key my_api_key --table my_table
+```
+
+With filters and limits:
+```bash
+python fetch_from_supabase.py \
+  --url https://myproject.supabase.co \
+  --key my_api_key \
+  --table plants \
+  --filters "status.eq.active,created_at.gte.2023-01-01" \
+  --limit 1000 \
+  --output plant_data.csv
+```
+
+Fetch and preview:
+```bash
+python fetch_from_supabase.py --url https://myproject.supabase.co --key my_api_key --table my_table --preview
+```
+
+### 🔄 Using the Fetched Data
+
+Once you have fetched your data as CSV, you can use it with the existing Hopular pipeline:
+
+1. Train a model:
+```bash
+python trainer.py --data supabase_data.csv --target TARGET_COLUMN
+```
+
+2. Use in your preprocessing pipeline:
+```bash
+python preprocessing.py --input supabase_data.csv --output processed_data.csv
+```
+
+### ⚠️ Important Notes
+
+- Make sure your Supabase table structure is compatible with your Hopular model (same features/columns)
+- The Supabase API key should have appropriate permissions to read the table
+- Consider data size limitations when fetching large tables
+- Enable Row Level Security (RLS) in Supabase appropriately for your use case
+
+---
+
+## 🚀 Automated Pipeline: run_train
+
+This repository includes a complete automated pipeline that combines fetching from Supabase, preprocessing, and training in a single command using subprocess calls.
+
+### 📋 Requirements
+
+Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+### 🚀 How to Use run_train
+
+#### Command Line Usage:
+```bash
+python run_train.py --url YOUR_SUPABASE_URL --key YOUR_SUPABASE_KEY --table TABLE_NAME --target TARGET_COLUMN
+```
+
+#### Arguments:
+| Argument | Type | Required | Description |
+|----------|------|----------|-------------|
+| `--url` | str | ✅ | Your Supabase project URL |
+| `--key` | str | ✅ | Your Supabase API key (anon or service role) |
+| `--table` | str | ✅ | Name of the Supabase table to fetch |
+| `--target` | str | ✅ | Target column name for training |
+| `--supabase-csv` | str | ❌ | Raw Supabase data CSV filename (default: `supabase_data.csv`) |
+| `--output-csv` | str | ❌ | Processed data CSV filename (default: `processed_data.csv`) |
+| `--filters` | str | ❌ | Filters in format: `col1.eq.value,col2.gt.100` |
+| `--limit` | int | ❌ | Row limit when fetching from Supabase |
+| `--epochs` | int | ❌ | Number of training epochs (default: 100) |
+| `--batch-size` | int | ❌ | Batch size for training (default: 32) |
+| `--patience` | int | ❌ | Early stopping patience (default: 10) |
+
+#### Example Commands:
+
+Complete pipeline with defaults:
+```bash
+python run_train.py --url https://myproject.supabase.co --key my_api_key --table my_table --target target_column
+```
+
+With filters and custom training parameters:
+```bash
+python run_train.py \
+  --url https://myproject.supabase.co \
+  --key my_api_key \
+  --table plants \
+  --target Tanaman \
+  --filters "status.eq.active,created_at.gte.2023-01-01" \
+  --limit 1000 \
+  --epochs 50 \
+  --batch-size 16
+```
+
+### 🔄 Pipeline Steps
+
+The `run_train.py` script automatically executes these steps:
+
+1. **Fetch from Supabase**: Calls `fetch_from_supabase.py` to download data
+2. **Preprocess**: Calls `preprocessing.py` to clean and prepare the data
+3. **Train**: Calls `trainer.py` to train the Hopular model
+
+### 📁 Output Files
+
+When the pipeline completes successfully, you'll have these files:
+- `supabase_data.csv` (raw data from Supabase)
+- `processed_data.csv` (cleaned and preprocessed data)
+- `best_hopular_model.pt` (trained model)
+- `metadata.pkl` (preprocessing metadata for inference)
+
+### ✅ Success Indicators
+
+A successful run will show:
+- ✅ Fetching from Supabase completed
+- ✅ Preprocessing completed
+- ✅ Training completed
+- ✅ All four output files generated
+
+---
+
+## 🌐 FastAPI for Hopular Pipeline
+
+This repository includes a FastAPI application that exposes both the run_train pipeline and inference as an HTTP API, allowing you to trigger complete workflows or make predictions via API calls.
+
+---
+
+### 🚀 How to Start the API Server
+
+#### Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+#### Start the server:
+```bash
+python api.py
+```
+
+By default, the API will be available at `http://localhost:8000`.
+
+#### Or with uvicorn directly:
+```bash
+uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### 📡 API Endpoints
+
+#### Root endpoint:
+- `GET /` - Check if the API is running
+
+#### Run Train Pipeline:
+- `POST /run_train` - Start the complete pipeline (async)
+- `GET /run_train/{job_id}` - Check the status of a pipeline job
+
+#### Inference:
+- `POST /inference` - Run inference on input data using trained model
+
+### 🛠️ Run Train Pipeline API Usage
+
+#### Start a pipeline job:
+```bash
+curl -X POST "http://localhost:8000/run_train" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "supabase_url": "https://your-project.supabase.co",
+    "supabase_key": "your_supabase_key",
+    "table_name": "your_table",
+    "target_column": "target_column",
+    "epochs": 50,
+    "batch_size": 16
+  }'
+```
+
+The API will return a job ID that you can use to check the status of the pipeline.
+
+#### Check pipeline status:
+```bash
+curl -X GET "http://localhost:8000/run_train/JOB_ID"
+```
+
+Example response:
+```json
+{
+  "job_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+  "status": "completed",
+  "message": "Pipeline completed successfully!",
+  "progress": "Training the Hopular model",
+  "created_at": "2023-10-01T10:00:00",
+  "completed_at": "2023-10-01T10:15:00",
+  "data": "supabase_data.csv",
+  "output_csv": "processed_data.csv",
+  "model_path": "best_hopular_model.pt",
+  "metadata_path": "metadata.pkl"
+}
+```
+
+#### Run Train Pipeline Parameters
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `supabase_url` | string | ✅ | Your Supabase project URL |
+| `supabase_key` | string | ✅ | Your Supabase API key (anon or service role) |
+| `table_name` | string | ✅ | Name of the Supabase table to fetch |
+| `target_column` | string | ✅ | Target column name for training |
+| `data` | string | ❌ | Raw Supabase data CSV filename (default: `supabase_data.csv`) |
+| `output_csv` | string | ❌ | Processed data CSV filename (default: `processed_data.csv`) |
+| `filters` | string | ❌ | Filters in format: `col1.eq.value,col2.gt.100` |
+| `limit` | integer | ❌ | Row limit when fetching from Supabase |
+| `epochs` | integer | ❌ | Number of training epochs (default: 100) |
+| `batch_size` | integer | ❌ | Batch size for training (default: 32) |
+| `patience` | integer | ❌ | Early stopping patience (default: 10) |
+| `test_size` | number | ❌ | Test size fraction (default: 0.2) |
+| `min_class_samples` | integer | ❌ | Minimum samples per class (default: 2) |
+
+#### Run Train Pipeline Status Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `job_id` | string | Unique identifier for the job |
+| `status` | string | Job status (`pending`, `running`, `completed`, `failed`) |
+| `message` | string | Status message |
+| `progress` | string | Current step being executed |
+| `created_at` | datetime | When the job was created |
+| `completed_at` | datetime | When the job completed (if completed) |
+| `data` | string | Path to the Supabase CSV file |
+| `output_csv` | string | Path to the processed CSV file |
+| `model_path` | string | Path to the trained model file |
+| `metadata_path` | string | Path to the metadata file |
+
+### 🧠 Inference API Usage
+
+#### Run inference on input data:
+```bash
+curl -X POST "http://localhost:8000/inference" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model_path": "best_hopular_model.pt",
+    "metadata_path": "metadata.pkl",
+    "target_column": "target_column",
+    "input_data": [
+      {
+        "feature1": 1.0,
+        "feature2": 2.0,
+        "feature3": "category_a"
+      },
+      {
+        "feature1": 1.5,
+        "feature2": 2.5,
+        "feature3": "category_b"
+      }
+    ]
+  }'
+```
+
+#### Example inference response:
+```json
+{
+  "predictions": ["class_a", "class_b"],
+  "input_count": 2,
+  "model_path": "best_hopular_model.pt",
+  "metadata_path": "metadata.pkl",
+  "processed_at": "2023-10-01T10:30:00"
+}
+```
+
+#### Inference Request Parameters
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `model_path` | string | ❌ | Path to the trained model file (default: `best_hopular_model.pt`) |
+| `metadata_path` | string | ❌ | Path to the metadata file (default: `metadata.pkl`) |
+| `target_column` | string | ❌ | Target column to exclude from prediction (if exists in input data) |
+| `input_data` | array of objects | ✅ | Array of records to predict (each record is an object with feature-value pairs) |
+
+#### Inference Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `predictions` | array | Array of prediction results |
+| `input_count` | integer | Number of records processed |
+| `model_path` | string | Path to the model used for inference |
+| `metadata_path` | string | Path to the metadata used for inference |
+| `processed_at` | datetime | When the inference was processed |
+
+### 🌱 PlantAdvisor Dataset Preprocessing
 
 This repository contains a preprocessing script that converts the raw PlantAdvisor Excel dataset (`.xlsx`) into a clean `data.csv` suitable for machine learning training (e.g., Hopular models).
 
@@ -277,3 +601,4 @@ Your new data must have the same features and format as the training data:
 The inference returns:
 - **Classification**: Predicted class labels
 - **CSV output**: Input data with additional `prediction` column
+

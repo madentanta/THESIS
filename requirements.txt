@@ -1,0 +1,8 @@
+torch
+scikit-learn
+pandas
+numpy
+tqdm
+supabase
+fastapi
+uvicorn[standard]

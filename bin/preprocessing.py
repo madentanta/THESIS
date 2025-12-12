@@ -12,21 +12,21 @@ def main():
 
     parser.add_argument(
         "--input", type=str, required=True,
-        help="Path to input Excel file (.xlsx)"
+        help="Path to input CSV file"
     )
 
     parser.add_argument(
-        "--output", type=str, default="data.csv",
+        "--output", type=str, default="processed data.csv",
         help="Path to output CSV file"
     )
 
     args = parser.parse_args()
 
     # ---------------------------------------
-    # Load Excel
+    # Load CSV
     # ---------------------------------------
     print(f"📥 Loading dataset: {args.input}")
-    df = pd.read_excel(args.input, header=1)
+    df = pd.read_csv(args.input, header=0)
 
     print("✅ Columns detected:", df.columns.tolist())
 

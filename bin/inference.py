@@ -13,7 +13,7 @@ import pickle
 import os
 import warnings
 warnings.filterwarnings('ignore')
-from customhopular import Hopular, encode_features
+from bin.customhopular import Hopular, encode_features
 
 
 class HopularInference:
