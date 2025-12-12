@@ -21,9 +21,9 @@ class InputController extends Controller
             // Batasan PH (0-14) lebih akurat, meskipun rentang 3-14 mungkin cukup untuk tanah.
             "soil_ph"       => "required|numeric|min:0|max:14",
             "location"      => "required|string|max:255",
-            // Batasan suhu/kelembapan ditambahkan untuk menghindari nilai ekstrem/sampah.
-            "temperature"   => "required|numeric|min:-50|max:100", // Range realistis
-            "humidity"      => "required|numeric|min:0|max:100",  // Harus antara 0% dan 100%
+
+            "temperature"   => "required|numeric|min:-50|max:100",
+            "humidity"      => "required|numeric|min:0|max:100",  
             "previous_crop" => "nullable|string|max:255",
         ]);
 
@@ -36,8 +36,6 @@ class InputController extends Controller
         }
 
         try {
-            // 2. TENTUKAN USER ID
-            // Menggunakan Auth::id() yang lebih disukai daripada auth()->id() untuk konsistensi.
             // Jika user tidak login/tidak terautentikasi, id akan bernilai null.
             $userId = Auth::id();
 
