@@ -23,7 +23,7 @@ import pandas as pd
 
 app = FastAPI(
     title="Hopular API",
-    description="API for running the complete Supabase fetch, preprocess, train and inference pipeline",
+    description="API for running the train and inference pipeline",
     version="1.0.0"
 )
 
@@ -40,17 +40,13 @@ class RunTrainRequest(BaseModel):
     """
     Request model for the run_train pipeline
     """
-    supabase_url: str
-    supabase_key: str
-    table_name: str
     target_column: str
-    data: Optional[str] = "data.csv"
-    output_csv: Optional[str] = "processed_data.csv"
+    data: Optional[str] = "data/data.csv"
+    output_csv: Optional[str] = "data/processed_data.csv"
     epochs: Optional[int] = 100
     batch_size: Optional[int] = 32
     patience: Optional[int] = 10
     test_size: Optional[float] = 0.2
-    min_class_samples: Optional[int] = 2
 
 
 class RunTrainResponse(BaseModel):
@@ -151,17 +147,9 @@ def run_train_pipeline_async(request: RunTrainRequest, job_id: str):
     try:
         # Step 1: Fetch data from Supabase
         fetch_cmd = [
-            sys.executable, "fetch_from_supabase.py",
-            "--url", request.supabase_url,
-            "--key", request.supabase_key,
-            "--table", request.table_name,
+            sys.executable, "bin/fetch_from_supabase.py",
             "--output", request.data
         ]
-
-        if request.filters:
-            fetch_cmd.extend(["--filters", request.filters])
-        if request.limit:
-            fetch_cmd.extend(["--limit", str(request.limit)])
 
         fetch_success = run_command_async(fetch_cmd, "Fetching data from Supabase", job_id)
 
@@ -172,7 +160,7 @@ def run_train_pipeline_async(request: RunTrainRequest, job_id: str):
 
         # Step 2: Preprocess the data
         preprocess_cmd = [
-            sys.executable, "preprocessing.py",
+            sys.executable, "bin/preprocessing.py",
             "--input", request.data,
             "--output", request.output_csv
         ]
@@ -186,14 +174,13 @@ def run_train_pipeline_async(request: RunTrainRequest, job_id: str):
 
         # Step 3: Train the model
         train_cmd = [
-            sys.executable, "trainer.py",
+            sys.executable, "bin/trainer.py",
             "--data", request.output_csv,
             "--target", request.target_column,
             "--epochs", str(request.epochs),
             "--batch", str(request.batch_size),
             "--patience", str(request.patience),
             "--test_size", str(request.test_size),
-            "--min_class_samples", str(request.min_class_samples)
         ]
 
         train_success = run_command_async(train_cmd, "Training the Hopular model", job_id)
@@ -206,8 +193,8 @@ def run_train_pipeline_async(request: RunTrainRequest, job_id: str):
         # Update job with output files
         jobs[job_id]["data"] = request.data
         jobs[job_id]["output_csv"] = request.output_csv
-        jobs[job_id]["model_path"] = "best_hopular_model.pt"
-        jobs[job_id]["metadata_path"] = "metadata.pkl"
+        jobs[job_id]["model_path"] = "output/best_hopular_model.pt"
+        jobs[job_id]["metadata_path"] = "output/metadata.pkl"
         jobs[job_id]["status"] = PipelineStatus.COMPLETED
         jobs[job_id]["message"] = "Pipeline completed successfully!"
         jobs[job_id]["completed_at"] = datetime.now()
@@ -219,62 +206,55 @@ def run_train_pipeline_async(request: RunTrainRequest, job_id: str):
         jobs[job_id]["message"] = f"Pipeline failed with exception: {str(e)}"
         print(f"Job {job_id}: Exception occurred: {str(e)}")
 
+from typing import List, Dict, Any, Optional
+from bin.inference import HopularInference
 
-def run_inference(input_data: List[Dict[str, Any]], model_path: str, metadata_path: str, target_column: Optional[str] = None):
+# Cache model instance (important for performance)
+_INFERENCE_CACHE = {}
+
+def run_inference(
+    input_data: List[Dict[str, Any]],
+    model_path: str,
+    metadata_path: str,
+    target_column: Optional[str] = None
+):
     """
-    Run inference on the input data using the trained model
+    Run inference using HopularInference directly (NO subprocess)
     """
+
     try:
-        # Import the inference module
-        from bin.inference import HopularInference
-        import pandas as pd
+        # --------------------------------------------------
+        # Cache model so we don't reload every request
+        # --------------------------------------------------
+        cache_key = f"{model_path}|{metadata_path}"
 
-        # Create a temporary CSV file to store input data
-        temp_input_file = f"temp_inference_input_{uuid.uuid4()}.csv"
+        if cache_key not in _INFERENCE_CACHE:
+            _INFERENCE_CACHE[cache_key] = HopularInference(
+                model_path=model_path,
+                metadata_path=metadata_path
+            )
 
-        # Convert input_data to DataFrame
-        df = pd.DataFrame(input_data)
+        inference_model = _INFERENCE_CACHE[cache_key]
 
-        # If target column is specified, remove it from the input data for prediction
-        if target_column and target_column in df.columns:
-            df = df.drop(columns=[target_column])
-
-        # Save to temporary CSV file
-        df.to_csv(temp_input_file, index=False)
-
-        # Prepare output file name
-        temp_output_file = f"temp_inference_output_{uuid.uuid4()}.csv"
-
-        # Create inference instance
-        hopular_inf = HopularInference(
-            model_path=model_path,
-            metadata_path=metadata_path
-        )
-
-        # Make predictions
-        predictions = hopular_inf.predict(df)
-
-        # Clean up temporary input file
-        if os.path.exists(temp_input_file):
-            os.remove(temp_input_file)
+        # --------------------------------------------------
+        # Run inference
+        # --------------------------------------------------
+        predictions = inference_model.predict_with_recommendations(input_data)
 
         return {
-            "predictions": predictions.tolist() if hasattr(predictions, 'tolist') else predictions,
+            "predictions": predictions,
             "input_count": len(input_data),
             "success": True
         }
 
     except Exception as e:
-        # Clean up temporary files if they exist
-        if 'temp_input_file' in locals() and os.path.exists(temp_input_file):
-            os.remove(temp_input_file)
-
         return {
             "predictions": [],
-            "input_count": 0,
+            "input_count": len(input_data),
             "success": False,
             "error": str(e)
         }
+
 
 
 @app.get("/")

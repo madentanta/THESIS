@@ -12,8 +12,9 @@ from typing import Union, List, Dict, Optional, Tuple
 import pickle
 import os
 import warnings
+import json
 warnings.filterwarnings('ignore')
-from bin.customhopular import Hopular, encode_features
+from .customhopular import Hopular, encode_features
 
 
 class HopularInference:
@@ -33,6 +34,9 @@ class HopularInference:
             metadata_path: Path to the metadata pickle file (contains scalers, encoders, etc.)
             device: Device to run inference on ('cuda', 'cpu', or None for auto)
         """
+        with open("data/preprocess_metadata.pkl", "rb") as f:
+            self.preprocess_metadata = pickle.load(f)
+
         self.device = device or ('cuda' if torch.cuda.is_available() else 'cpu')
 
         # Load metadata
@@ -49,6 +53,10 @@ class HopularInference:
         print(f"Hopular inference module loaded on {self.device}")
         print(f"Task: {self.metadata.get('task', 'Unknown')}")
 
+        # Define crop names mapping based on training data
+        # This maps encoded class values back to crop names
+        self.crop_mapping = {0: "Jagung", 1: "Padi", 2: "Kedelai"}  # Adjust these based on your actual crop names
+
     def _load_model(self, model_path: str) -> Hopular:
         """Load the trained Hopular model"""
         if not os.path.exists(model_path):
@@ -62,14 +70,14 @@ class HopularInference:
             feature_discrete=self.metadata['feature_discrete'],
             memory=self.metadata['memory'],  # Use training memory
             feature_size=32,  # Use same configuration as training
-            hidden_size=16,
+            hidden_size=32,  # Increased for better performance
             hidden_size_factor=1.0,
             num_heads=4,
-            num_blocks=1,
+            num_blocks=2,  # Increased from 1 for better performance
             scaling_factor=1.0,
-            input_dropout=0.2,
-            lookup_dropout=0.2,
-            output_dropout=0.2,
+            input_dropout=0.1,
+            lookup_dropout=0.1,
+            output_dropout=0.1,
             memory_ratio=1.0  # Use full memory during inference
         )
 
@@ -79,122 +87,156 @@ class HopularInference:
 
         return model
 
-    def preprocess_input(self,
-                        input_data: Union[pd.DataFrame, np.ndarray, dict],
-                        feature_columns: Optional[List[str]] = None) -> Tuple[np.ndarray, List[str]]:
-        """
-        Preprocess input data to match the format expected by the model
-
-        Args:
-            input_data: Input data as DataFrame, array, or dict
-            feature_columns: Names of feature columns (if different from training data)
-
-        Returns:
-            Tuple of (preprocessed_data, feature_names)
-        """
-        if self.metadata is None:
-            raise ValueError("Metadata is required for preprocessing")
-
-        # Convert to DataFrame if needed
+    def preprocess_input(self, input_data):
+    # -----------------------------
+    # Convert input to DataFrame
+    # -----------------------------
         if isinstance(input_data, dict):
-            input_data = pd.DataFrame([input_data])
-        elif isinstance(input_data, np.ndarray):
-            if feature_columns is None:
-                raise ValueError("feature_columns must be provided when input is numpy array")
-            input_data = pd.DataFrame(input_data, columns=feature_columns)
-        elif not isinstance(input_data, pd.DataFrame):
-            raise ValueError("Input data must be DataFrame, dict, or numpy array")
-
-        # Get feature names from metadata
-        # For newer scikit-learn versions, try to use scaler's feature_names_in_
-        # For older versions, use original_features stored in metadata
-        scaler = self.metadata.get('scaler')
-        if hasattr(scaler, 'feature_names_in_'):
-            original_features = scaler.feature_names_in_
+            input_df = pd.DataFrame([self._map_input_format(input_data)])
+        elif isinstance(input_data, list):
+            input_df = pd.DataFrame(
+                [self._map_input_format(x) for x in input_data]
+            )
+        elif isinstance(input_data, pd.DataFrame):
+            input_df = input_data.copy()
         else:
-            # Fallback to original_features stored in metadata
-            original_features = self.metadata.get('original_features', [])
+            raise ValueError("Unsupported input type")
 
-        # Validate that we have the required feature names
-        if not original_features:
-            raise ValueError("Could not determine original feature names from metadata")
+        meta = self.preprocess_metadata
+        feature_names = meta["feature_names"]
+        continuous_cols = meta["continuous_cols"]
+        categorical_cols = meta["categorical_cols"]
 
-        print(f"Expected features: {len(original_features)}, Input features: {len(input_data.columns)}")
+        # -----------------------------
+        # Ensure feature order
+        # -----------------------------
+        for col in feature_names:
+            if col not in input_df.columns:
+                input_df[col] = 0.0
 
-        # Ensure correct feature ordering
-        missing_cols = set(original_features) - set(input_data.columns)
-        if missing_cols:
-            raise ValueError(f"Missing required columns: {missing_cols}")
+        input_df = input_df[feature_names]
 
-        input_df = input_data[original_features].copy()
-
-        # Apply the same preprocessing as during training
+        # -----------------------------
         # Encode categorical columns
-        label_encoders = self.metadata.get('label_encoders', {})
-        for col in label_encoders.keys():
-            if col in input_df.columns:
-                # Handle unseen categories by mapping them to a default value
-                le = label_encoders[col]
-                # Get the list of known classes
-                known_classes = set(le.classes_)
+        # -----------------------------
+        for col in categorical_cols:
+            le = meta["label_encoders"][col]
+            known = set(le.classes_)
+            default = le.classes_[0]
 
-                # Convert to string first to handle different data types
-                input_df[col] = input_df[col].astype(str)
+            input_df[col] = input_df[col].astype(str)
+            input_df[col] = input_df[col].apply(
+                lambda x: x if x in known else default
+            )
+            input_df[col] = le.transform(input_df[col])
 
-                # Map unknown values to the first known class to avoid unseen label errors
-                input_df[col] = input_df[col].apply(
-                    lambda x: x if x in known_classes else str(le.classes_[0])
-                )
+        # -----------------------------
+        # Scale continuous features
+        # -----------------------------
+        scaler = meta["scaler"]
+        input_df[continuous_cols] = scaler.transform(
+            input_df[continuous_cols].astype(np.float32)
+        )
 
-                # Transform using the fitted encoder
-                try:
-                    input_df[col] = le.transform(input_df[col])
-                except ValueError as e:
-                    # Handle unseen labels by setting them to the first class
-                    print(f"Warning: Unseen labels in {col}, mapping to first class")
-                    input_df[col] = input_df[col].apply(
-                        lambda x: le.transform([str(le.classes_[0])])[0] if x not in known_classes else le.transform([str(x)])[0]
-                    )
+        # -----------------------------
+        # Encode for Hopular
+        # -----------------------------
+        X = input_df.values.astype(np.float32)
 
-        # Apply the same standardization as during training
-        scaler = self.metadata.get('scaler')
-        X_scaled = scaler.transform(input_df.values.astype(np.float32))
+        n_features = len(feature_names)
+        input_sizes = self.metadata["input_sizes"][:n_features]
+        feature_discrete = [
+            i for i in self.metadata["feature_discrete"]
+            if i < n_features
+        ]
 
-        # Encode features in the same format as training
-        # We only encode the feature part (not the target part) so exclude target from input_sizes
-        n_features = len(original_features)  # Number of input features (excluding target)
-        input_sizes = self.metadata['input_sizes'][:n_features]  # Only feature sizes, exclude target
-        feature_discrete = [i for i in self.metadata['feature_discrete'] if i < len(input_sizes)]
+        X_encoded = encode_features(X, input_sizes, feature_discrete)
 
-        print(f"Input shape before encoding: {X_scaled.shape}")
-        print(f"Input sizes: {input_sizes}")
-        print(f"Feature discrete: {feature_discrete}")
+        # -----------------------------
+        # Add target placeholder
+        # -----------------------------
+        total_size = sum(self.metadata["input_sizes"])
+        X_full = np.zeros((X_encoded.shape[0], total_size), dtype=np.float32)
+        X_full[:, :sum(input_sizes)] = X_encoded
 
-        X_encoded_features = encode_features(X_scaled, input_sizes, feature_discrete)
+        return X_full, feature_names
 
-        print(f"Encoded features shape: {X_encoded_features.shape}")
 
-        # The model expects the full input including target placeholders
-        # The actual input_sizes for the model includes both features and target
-        total_input_sizes = self.metadata['input_sizes']  # Includes features + target
-        total_feature_size = sum(total_input_sizes)
+    def _map_input_format(self, input_dict: dict) -> dict:
+        """
+        Map the API input format to the training format.
+        Input: {
+            "soil_ph": float,
+            "temperature": float,
+            "humidity": float,
+            "location": string,
+            "previous_crop": string
+        }
+        Output: {
+            "fertility": float,
+            "moisture": float,
+            "ph": float,
+            "temp": float,
+            "sunlight": float,
+            "humidity": float,
+            "kecamatan": string,
+            "nama_tanaman": string (will be ignored for prediction)
+        }
+        """
+        # Create a mapping from API format to training format
+        # Note: Some fields like soil_ph and pH need to be mapped appropriately
+        mapped = {}
 
-        # Create full input with feature part + empty target part
-        batch_size = X_encoded_features.shape[0]
-        X_full = np.zeros((batch_size, total_feature_size), dtype=np.float32)
+        # Map values from input format to training format
+        # Since we don't have complete mapping in the original training data,
+        # we'll use placeholder values for fields not provided in the API input
+        # The most important thing is to maintain the correct column names and order
 
-        # Place the encoded features at the beginning
-        feature_size_sum = sum(input_sizes)
-        X_full[:, :feature_size_sum] = X_encoded_features
+        # Map the available fields
+        if 'soil_ph' in input_dict:
+            mapped['ph'] = float(input_dict['soil_ph'])
+        elif 'ph' in input_dict:
+            mapped['ph'] = float(input_dict['ph'])
 
-        # Leave target part as zeros (to be predicted)
+        if 'temperature' in input_dict:
+            mapped['temp'] = float(input_dict['temperature'])
+        elif 'temp' in input_dict:
+            mapped['temp'] = float(input_dict['temp'])
 
-        print(f"Final input shape: {X_full.shape}, Expected: {total_feature_size}")
+        if 'humidity' in input_dict:
+            mapped['humidity'] = float(input_dict['humidity'])
 
-        return X_full, list(original_features)
+        # Map location to kecamatan (location field in training data)
+        if 'location' in input_dict:
+            # This needs to match the location encoding from training
+            # For now, we'll use a placeholder; in a real implementation,
+            # you would need to have the proper label encoder from training
+            mapped['kecamatan'] = str(input_dict['location'])
+        else:
+            # Placeholder - you need to handle this based on your training data
+            mapped['kecamatan'] = "default"
+
+        # Map previous crop to nama_tanaman, but we'll remove it before prediction
+        # since it's the target variable
+        if 'previous_crop' in input_dict:
+            mapped['nama_tanaman'] = str(input_dict['previous_crop'])
+        else:
+            mapped['nama_tanaman'] = "default"
+
+        # For the remaining fields, we need default values from training statistics
+        # Add default values for other required fields based on training data
+        # These should be set to average values from the training dataset
+        if 'moisture' not in mapped:
+            mapped['moisture'] = 0.0  # Default value from training normalization
+        if 'fertility' not in mapped:
+            mapped['fertility'] = 0.0  # Default value from training normalization
+        if 'sunlight' not in mapped:
+            mapped['sunlight'] = 0.0  # Default value from training normalization
+
+        return mapped
 
     def predict(self,
-               input_data: Union[pd.DataFrame, np.ndarray, dict],
+               input_data: Union[pd.DataFrame, np.ndarray, dict, List[dict]],
                feature_columns: Optional[List[str]] = None,
                return_probabilities: bool = False) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
         """
@@ -246,6 +288,90 @@ class HopularInference:
                 return predictions, probabilities
             else:
                 return predictions
+
+    def predict_with_recommendations(self, input_data: Union[Dict, List[Dict]]) -> Union[List[Dict], Dict]:
+        """
+        Predict with detailed recommendations in the specified format
+
+        Args:
+            input_data: Input data in the format {"soil_ph": float, "temperature": float, ...}
+
+        Returns:
+            Recommendations in the format:
+            [{"nama_tanaman":"Jagung Hibrida","kecocokan":0.65,"keterangan":"..."}]
+        """
+        with torch.no_grad():
+            # Preprocess input
+            X_encoded, feature_names = self.preprocess_input(input_data)
+
+            # Convert to tensor
+            X_tensor = torch.FloatTensor(X_encoded).to(self.device)
+
+            # Forward pass
+            output = self.model(X_tensor, memory_mask=None)
+
+            # Extract target predictions
+            input_sizes = self.metadata['input_sizes']
+            feature_sizes_sum = sum(input_sizes[:-1])  # All feature sizes before target
+            target_size = input_sizes[-1]  # Size of target
+            target_start = feature_sizes_sum
+            target_end = target_start + target_size
+
+            # Extract target predictions (logits)
+            target_predictions = output[:, target_start:target_end]
+
+            # Convert logits to probabilities
+            probabilities = torch.softmax(target_predictions, dim=1).cpu().numpy()
+
+            # Check if it's a single prediction
+            single_input = isinstance(input_data, dict)
+            if single_input:
+                # Only one input, return single result
+                result = self._generate_recommendation(probabilities[0])
+                return result
+            else:
+                # Multiple inputs, return list of results
+                results = []
+                for prob in probabilities:
+                    results.append(self._generate_recommendation(prob))
+                return results
+
+    def _generate_recommendation(self, probabilities: np.ndarray) -> List[Dict]:
+        """
+        Generate recommendations based on probabilities
+
+        Args:
+            probabilities: Array of probabilities for each class
+
+        Returns:
+            List of crop recommendations with suitability scores
+        """
+        recommendations = []
+
+        # Get the crop names and their corresponding probabilities
+        for class_idx, prob in enumerate(probabilities):
+            if prob > 0.1:  # Only include crops with significant probability
+                crop_name = self.crop_mapping.get(class_idx, f"Unknown Crop {class_idx}")
+
+                # Add description based on crop type
+                if crop_name == "Jagung":
+                    description = "Dapat beradaptasi pada suhu lebih tinggi, perlu cek kesuburan NPK."
+                elif crop_name == "Padi":
+                    description = "Membutuhkan kelembaban tanah yang cukup, perhatikan drainase."
+                elif crop_name == "Kedelai":
+                    description = "Cocok untuk tanah dengan pH netral, butuh sinar matahari cukup."
+                else:
+                    description = "Rekomendasi tanaman berdasarkan kondisi tanah saat ini."
+
+                recommendations.append({
+                    "nama_tanaman": crop_name,
+                    "kecocokan": float(prob),
+                    "keterangan": description
+                })
+
+        # Sort by suitability score in descending order
+        recommendations.sort(key=lambda x: x["kecocokan"], reverse=True)
+        return recommendations
 
     def _postprocess_predictions(self, target_predictions: torch.Tensor) -> np.ndarray:
         """

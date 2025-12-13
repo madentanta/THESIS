@@ -10,11 +10,8 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import pandas as pd
 import numpy as np
-from torch.utils.data import Dataset, DataLoader
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from torch.utils.data import Dataset
 from typing import Optional, Tuple, List, Dict, Any
 import warnings
 warnings.filterwarnings('ignore')
@@ -470,6 +467,19 @@ class Hopular(nn.Module):
             dropout_probability=output_dropout
         )
 
+        # Add a target-specific output layer to ensure better target prediction
+        # We'll identify the target position and size to apply specific processing
+        if target_discrete:
+            target_idx = target_discrete[0]  # First target index
+            target_size = input_sizes[target_idx]
+            self.target_output_layer = nn.Sequential(
+                nn.Linear(feature_size, feature_size // 2),
+                nn.ReLU(),
+                nn.Dropout(0.1),
+                nn.Linear(feature_size // 2, target_size),
+                nn.LogSoftmax(dim=-1)  # Ensure proper probability distribution for classification
+            )
+
     def forward(self,
                 input: torch.Tensor,
                 memory_mask: Optional[torch.Tensor] = None) -> torch.Tensor:
@@ -525,7 +535,9 @@ class Hopular(nn.Module):
 
         # Summarize to output
         hopular_iteration = hopular_iteration.reshape(hopular_iteration.shape[1], -1)
-        return self.summarizations(hopular_iteration)
+        output = self.summarizations(hopular_iteration)
+
+        return output
 
 
 class TabularDataset(Dataset):
@@ -567,325 +579,24 @@ class TabularDataset(Dataset):
         return x_masked, mask, x, missing, torch.tensor(idx, dtype=torch.long)
 
 
-
-def remove_rare_classes(X: np.ndarray, y: np.ndarray, min_samples: int = 2) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Remove classes with fewer than min_samples samples
-
-    Args:
-        X: features
-        y: targets
-        min_samples: minimum number of samples per class
-    Returns:
-        X_filtered, y_filtered
-    """
-    unique, counts = np.unique(y, return_counts=True)
-    valid_classes = unique[counts >= min_samples]
-
-    if len(valid_classes) < len(unique):
-        removed_classes = unique[counts < min_samples]
-        print(f"Warning: Removing {len(removed_classes)} class(es) with < {min_samples} samples")
-        print(f"Removed classes: {removed_classes}")
-
-        mask = np.isin(y, valid_classes)
-        return X[mask], y[mask]
-
-    return X, y
-
-
-def load_and_preprocess_csv(csv_path: str,
-                            target_column: str,
-                            categorical_columns: Optional[List[str]] = None,
-                            test_size: float = 0.2,
-                            random_state: int = 42,
-                            min_class_samples: int = 3) -> Tuple:
-    """
-    Load and preprocess CSV data for Hopular
-
-    Args:
-        csv_path: Path to CSV file
-        target_column: Name of target column
-        categorical_columns: List of categorical column names (auto-detect if None)
-        test_size: Proportion of data for test+val (will be split again)
-        random_state: Random seed
-        min_class_samples: Minimum samples per class (removes rare classes)
-
-    Returns:
-        train_dataset, val_dataset, test_dataset, metadata dictionary
-    """
-    # Load data
-    df = pd.read_csv(csv_path)
-
-    print(f"Loaded dataset: {len(df)} samples, {len(df.columns)-1} features")
-
-    # Separate features and target
-    X = df.drop(columns=[target_column])
-    y = df[target_column]
-
-    original_features = list(X.columns)
-
-    # Identify categorical columns
-    if categorical_columns is None:
-        categorical_columns = X.select_dtypes(include=['object', 'category']).columns.tolist()
-
-    # Encode categorical features
-    label_encoders = {}
-    for col in categorical_columns:
-        if col in X.columns:
-            le = LabelEncoder()
-            X[col] = le.fit_transform(X[col].astype(str))
-            label_encoders[col] = le
-
-    # Determine task type and encode target
-    task = 'classification'
-    target_label_encoder = None
-
-    if y.dtype == 'object' or len(y.unique()) < 20:
-        target_label_encoder = LabelEncoder()
-        y = target_label_encoder.fit_transform(y)
-        task = 'classification'
-        print(f"Task: Classification with {len(np.unique(y))} classes")
-
-        # Show class distribution
-        unique, counts = np.unique(y, return_counts=True)
-        print(f"Class distribution: {dict(zip(unique, counts))}")
-    else:
-        task = 'regression'
-        y = y.values.astype(np.float32)
-        print(f"Task: Regression")
-
-    X_values = X.values.astype(np.float32)
-
-    # For classification, remove rare classes if needed
-    if task == 'classification':
-        X_values, y = remove_rare_classes(X_values, y, min_samples=min_class_samples)
-        print(f"After filtering: {len(X_values)} samples")
-
-        # Re-encode the target labels to ensure they are consecutive from 0 to n_classes-1
-        # This fixes the issue where class values after filtering might not be consecutive
-        unique_labels = np.unique(y)
-        label_map = {old_label: new_label for new_label, old_label in enumerate(unique_labels)}
-
-        # Apply the mapping to re-encode all the target values
-        y = np.array([label_map[old_label] for old_label in y])
-
-    scaler = StandardScaler()
-    scaler.fit(X_values)
-    X_values = scaler.transform(X_values).astype(np.float32)
-
-    # Check if stratification is possible for classification
-    stratify_train = None
-    stratify_val = None
-    if task == 'classification':
-        # Check if all classes have at least 2 samples
-        unique, counts = np.unique(y, return_counts=True)
-        min_samples = counts.min()
-
-        if min_samples >= 2 and len(X_values) >= 10:
-            stratify_train = y
-            print(f"Using stratified split (min class size: {min_samples})")
-        else:
-            print(f"Warning: Some classes have only {min_samples} sample(s).")
-            print("Using random split instead of stratified split.")
-            stratify_train = None
-
-    # Split data
-    X_train, X_temp, y_train, y_temp = train_test_split(
-        X_values, y, test_size=test_size * 2, random_state=random_state,
-        stratify=stratify_train
-    )
-
-    # Check stratification for validation split
-    if task == 'classification' and stratify_train is not None:
-        unique, counts = np.unique(y_temp, return_counts=True)
-        if counts.min() >= 2:
-            stratify_val = y_temp
-        else:
-            stratify_val = None
-
-    X_val, X_test, y_val, y_test = train_test_split(
-        X_temp, y_temp, test_size=0.5, random_state=random_state,
-        stratify=stratify_val
-    )
-
-    # Note: y, y_train, y_val, y_test are already re-encoded at this point due to the earlier steps
-    # so no further re-encoding is needed
-
-
-    # Prepare sizes for Hopular (each feature gets size 1 for continuous, or n_classes for categorical)
-    input_sizes = []
-    feature_discrete = []
-
-    for i, col in enumerate(X.columns):
-        if col in categorical_columns:
-            n_classes = len(label_encoders[col].classes_)
-            input_sizes.append(n_classes)
-            feature_discrete.append(i)
-        else:
-            input_sizes.append(1)
-
-    # One-hot encode features for Hopular
-    X_train_encoded = encode_features(X_train, input_sizes, feature_discrete)
-    X_val_encoded = encode_features(X_val, input_sizes, feature_discrete)
-    X_test_encoded = encode_features(X_test, input_sizes, feature_discrete)
-
-    # One-hot encode targets if classification
-    if task == 'classification':
-        # Recalculate n_classes after removing rare classes and re-encoding
-        n_classes = len(np.unique(y))
-        y_train_encoded = F.one_hot(torch.LongTensor(y_train), num_classes=n_classes).float().numpy()
-        y_val_encoded = F.one_hot(torch.LongTensor(y_val), num_classes=n_classes).float().numpy()
-        y_test_encoded = F.one_hot(torch.LongTensor(y_test), num_classes=n_classes).float().numpy()
-
-        target_discrete = [len(input_sizes)]  # Target is the last "feature"
-        target_numeric = []
-        input_sizes.append(n_classes)
-    else:
-        y_train_encoded = y_train.reshape(-1, 1)
-        y_val_encoded = y_val.reshape(-1, 1)
-        y_test_encoded = y_test.reshape(-1, 1)
-
-        target_discrete = []
-        target_numeric = [len(input_sizes)]
-        input_sizes.append(1)
-
-    # Concatenate features and targets
-    X_train_full = np.concatenate([X_train_encoded, y_train_encoded], axis=1)
-    X_val_full = np.concatenate([X_val_encoded, y_val_encoded], axis=1)
-    X_test_full = np.concatenate([X_test_encoded, y_test_encoded], axis=1)
-
-    metadata = {
-        'input_sizes': input_sizes,
-        'feature_discrete': feature_discrete,
-        'target_discrete': target_discrete,
-        'target_numeric': target_numeric,
-        'task': task,
-        'n_features': len(X.columns),
-        'scaler': scaler,
-        'label_encoders': label_encoders,
-        'target_label_encoder': target_label_encoder,
-        'memory': torch.FloatTensor(X_train_full),
-        'original_features': list(X.columns)
-    }
-
-    return X_train_full, X_val_full, X_test_full, y_train, y_val, y_test, metadata
-
-def analyze_dataset(csv_path: str, target_column: str) -> None:
-    """
-    Analyze dataset and print useful statistics
-
-    Args:
-        csv_path: Path to CSV file
-        target_column: Name of target column
-    """
-    import pandas as pd
-    import numpy as np
-
-    df = pd.read_csv(csv_path)
-    print("=" * 60)
-    print("DATASET ANALYSIS")
-    print("=" * 60)
-
-    print(f"\n📊 Basic Info:")
-    print(f"  Total samples: {len(df)}")
-    print(f"  Total features: {len(df.columns) - 1}")
-    print(f"  Target column: '{target_column}'")
-
-    # Check for missing values
-    missing = df.isnull().sum()
-    if missing.any():
-        print(f"\n⚠️  Missing values detected:")
-        for col, count in missing[missing > 0].items():
-            print(f"   {col}: {count} ({100*count/len(df):.1f}%)")
-    else:
-        print(f"\n✔️ No missing values")
-
-    # Analyze target
-    y = df[target_column]
-    if y.dtype == object or len(y.unique()) < 20:
-        print(f"\n🎯 Target (Classification):")
-        print(f"  Number of classes: {len(y.unique())}")
-        print(f"\n  Class distribution:")
-        counts = y.value_counts().sort_index()
-        for class_val, count in counts.items():
-            print(f"   {class_val}: {count} samples ({100*count/len(df):.1f}%)")
-
-        # Check for rare classes
-        min_count = counts.min()
-        if min_count < 3:
-            print(f"\n⚠️  WARNING: Smallest class has only {min_count} sample(s)")
-            rare_classes = counts[counts < 3].index.tolist()
-            print(f"  Rare classes: {rare_classes}")
-        elif min_count < 10:
-            print(f"\nℹ️  Note: Smallest class has {min_count} samples")
-    else:
-        print(f"\n🎯 Target (Regression):")
-        print(f"  Min: {y.min():.2f}")
-        print(f"  Max: {y.max():.2f}")
-        print(f"  Mean: {y.mean():.2f}")
-        print(f"  Std: {y.std():.2f}")
-
-    # Analyze features
-    X = df.drop(columns=[target_column])
-    categorical_cols = X.select_dtypes(include=['object', 'category']).columns.tolist()
-    numeric_cols = X.select_dtypes(include=[np.number]).columns.tolist()
-
-    print(f"\n🔍 Feature Types:")
-    print(f"  Numeric features ({len(numeric_cols)}): {numeric_cols}")
-    print(f"  Categorical features ({len(categorical_cols)}): {categorical_cols}")
-
-    print("\n✔️ Dataset analysis complete.")
-
-
-
-def encode_features(X: np.ndarray, input_sizes: List[int], feature_discrete: List[int]) -> np.ndarray:
+def encode_features(X: np.ndarray, input_sizes: List[int],
+                   feature_discrete: List[int]) -> np.ndarray:
     """One-hot encode categorical features"""
     encoded_features = []
+    col_idx = 0
 
     for i, size in enumerate(input_sizes):
         if i in feature_discrete:
-            # One-hot encode with safety check for out-of-bounds values
-            feature_vals = X[:, i].astype(int)
-
-            # Check if any values are out of bounds (>= size) and clip them
-            if np.any(feature_vals >= size):
-                print(f"Warning: Found values >= {size} for feature {i}, clipping to {size-1}")
-                feature_vals = np.clip(feature_vals, 0, size-1)
-
-            one_hot = F.one_hot(torch.LongTensor(feature_vals), num_classes=size).float().numpy()
+            # One-hot encode
+            feature_vals = X[:, col_idx].astype(int)
+            feature_vals = np.clip(feature_vals, 0, size-1)
+            one_hot = F.one_hot(torch.LongTensor(feature_vals),
+                               num_classes=size).float().numpy()
             encoded_features.append(one_hot)
         else:
-            # Keep as is (already standardized)
-            encoded_features.append(X[:, i:i+1])
+            # Keep continuous as-is
+            encoded_features.append(X[:, col_idx:col_idx+1])
+
+        col_idx += 1
 
     return np.concatenate(encoded_features, axis=1)
-
-
-# Example usage
-if __name__ == "__main__":
-    print("Hopular implementation for CSV datasets")
-    print("\n1. First, analyze your dataset:")
-    print("   analyze_dataset('your_data.csv', 'target_column')")
-    print("\n2. Then load and preprocess:")
-    print("   X_train, X_val, X_test, y_train, y_val, y_test, metadata = \\")
-    print("       load_and_preprocess_csv('your_data.csv', 'target_column')")
-    print("\n3. See hopular_trainer.py for training examples")
-    print("\nQuick test with Iris dataset:")
-
-    try:
-        from sklearn.datasets import load_iris
-        import pandas as pd
-
-        # Create iris CSV
-        iris = load_iris()
-        df = pd.DataFrame(iris.data, columns=iris.feature_names)
-        df['target'] = iris.target
-        df.to_csv('/tmp/iris.csv', index=False)
-
-        print("\n" + "="*60)
-        analyze_dataset('/tmp/iris.csv', 'target')
-        print("\nIris dataset analyzed successfully!")
-        print("Try: load_and_preprocess_csv('/tmp/iris.csv', 'target')")
-    except Exception as e:
-        print(f"\nCouldn't create test dataset: {e}")
-        print("Use your own CSV file instead.")

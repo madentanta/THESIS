@@ -6,3 +6,5 @@ tqdm
 supabase
 fastapi
 uvicorn[standard]
+matplotlib
+seaborn

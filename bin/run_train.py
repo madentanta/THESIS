@@ -12,6 +12,7 @@ import sys
 import argparse
 import os
 from typing import Optional
+from dotenv import load_dotenv
 
 
 def run_command(cmd: list, description: str) -> bool:
@@ -36,14 +37,9 @@ def run_command(cmd: list, description: str) -> bool:
         return False
 
 
-def run_train_pipeline(supabase_url: str, 
-                       supabase_key: str, 
-                       table_name: str, 
-                       target_column: str,
-                       data: str = "supabase_data.csv",
-                       output_csv: str = "processed_data.csv",
-                       filters: Optional[str] = None,
-                       limit: Optional[int] = None,
+def run_train_pipeline(target_column: str,
+                       data: str = "data/data.csv",
+                       output_csv: str = "data/processed_data.csv",
                        epochs: int = 100,
                        batch_size: int = 32,
                        patience: int = 10,
@@ -59,28 +55,20 @@ def run_train_pipeline(supabase_url: str,
     # Step 1: Fetch data from Supabase
     print("\nStep 1: Fetching data from Supabase...")
     fetch_cmd = [
-        sys.executable, "fetch_from_supabase.py",
-        "--url", supabase_url,
-        "--key", supabase_key,
-        "--table", table_name,
+        sys.executable, "bin/fetch_from_supabase.py",
         "--output", data
     ]
-    
-    if filters:
-        fetch_cmd.extend(["--filters", filters])
-    if limit:
-        fetch_cmd.extend(["--limit", str(limit)])
     
     fetch_success = run_command(fetch_cmd, "Fetching data from Supabase")
     
     if not fetch_success:
-        print("❌ Failed to fetch data from Supabase. Exiting.")
+        print("Failed to fetch data from Supabase. Exiting.")
         return False
     
     # Step 2: Preprocess the data
     print("\nStep 2: Preprocessing data...")
     preprocess_cmd = [
-        sys.executable, "preprocessing.py",
+        sys.executable, "bin/preprocessing.py",
         "--input", data,
         "--output", output_csv
     ]
@@ -88,26 +76,25 @@ def run_train_pipeline(supabase_url: str,
     preprocess_success = run_command(preprocess_cmd, "Preprocessing data")
     
     if not preprocess_success:
-        print("❌ Failed to preprocess data. Exiting.")
+        print("Failed to preprocess data. Exiting.")
         return False
     
     # Step 3: Train the model
     print("\nStep 3: Training the Hopular model...")
     train_cmd = [
-        sys.executable, "trainer.py",
+        sys.executable, "bin/trainer.py",
         "--data", output_csv,
         "--target", target_column,
         "--epochs", str(epochs),
         "--batch", str(batch_size),
         "--patience", str(patience),
-        "--test_size", str(test_size),
-        "--min_class_samples", str(min_class_samples)
+        "--test_size", str(test_size)
     ]
     
     train_success = run_command(train_cmd, "Training the Hopular model")
     
     if not train_success:
-        print("❌ Failed to train the model. Exiting.")
+        print("Failed to train the model. Exiting.")
         return False
     
     print("\n" + "=" * 70)
@@ -126,29 +113,6 @@ def main():
     parser = argparse.ArgumentParser(
         description="Complete pipeline: Fetch from Supabase, preprocess, and train Hopular model"
     )
-    
-    # Supabase arguments
-    parser.add_argument(
-        "--url", 
-        type=str, 
-        required=True,
-        help="Supabase URL (e.g., https://abcde.supabase.co)"
-    )
-    
-    parser.add_argument(
-        "--key", 
-        type=str, 
-        required=True,
-        help="Supabase API key (anon or service role key)"
-    )
-    
-    parser.add_argument(
-        "--table", 
-        type=str, 
-        required=True,
-        help="Name of the Supabase table to fetch"
-    )
-    
     parser.add_argument(
         "--target", 
         type=str, 
@@ -157,17 +121,17 @@ def main():
     )
     
     parser.add_argument(
-        "--supabase-csv", 
+        "--data", 
         type=str, 
-        default="data.csv",
-        help="CSV filename for raw Supabase data (default: data.csv)"
+        default="data/data.csv",
+        help="CSV filename for raw Supabase data (default: data/data.csv)"
     )
     
     parser.add_argument(
         "--output-csv", 
         type=str, 
-        default="processed_data.csv",
-        help="Output CSV filename after preprocessing (default: processed_data.csv)"
+        default="data/processed_data.csv",
+        help="Output CSV filename after preprocessing (default: data/processed_data.csv)"
     )
     
     # Training arguments
@@ -210,9 +174,6 @@ def main():
     
     # Run the complete pipeline
     success = run_train_pipeline(
-        supabase_url=args.url,
-        supabase_key=args.key,
-        table_name=args.table,
         target_column=args.target,
         data=args.data,
         output_csv=args.output_csv,
