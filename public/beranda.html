@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>PlantAdvisor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        /* CSS untuk popup success (Dipertahankan dari snippet Anda) */
+        @keyframes slideInFromRight {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .popup-success{
+            position:fixed; top:20px; right:20px; width:250px; background: #f0fff0; color:#333; display:none;
+            z-index:9999; border-radius:8px; padding:10px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border: 1px solid #28a745; font-family: 'Inter', sans-serif; text-align: left; opacity: 0;
+        }
+        /* Style untuk menyembunyikan/menampilkan tombol */
+        .hidden-btn { display: none !important; }
+
+        /* Tambahkan di file style.css atau di tag <style> */
+       .username-display {
+            color: black; /* Diubah menjadi hitam */
+            font-weight: 600;
+            margin-right: 15px;
+            padding: 8px 10px;
+            border-radius: 5px;
+            white-space: nowrap;
+            cursor: pointer; /* Menandakan bahwa ini dapat diklik */
+        }
+
+        /* Pastikan semua tombol memiliki margin yang seragam jika Anda menggunakan Flexbox di header-buttons */
+        .header-buttons a, .header-buttons .username-display {
+            margin-left: 10px;
+        }
+        
+        /* Modifikasi untuk Positioning Relatif pada Header Buttons Container */
+        .header-buttons {
+            position: relative; /* PENTING: Untuk menempatkan .profile-popup secara absolut di dalamnya */
+            display: flex;
+            align-items: center;
+        }
+
+        /* Style untuk popup profil */
+        .profile-popup {
+            position: absolute;
+            top: 100%; /* Akan muncul tepat di bawah .username-display */
+            right: 0;
+            width: 250px;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            padding: 15px;
+            display: none; /* Sembunyikan secara default */
+            transform-origin: top right;
+            animation: fadeInScale 0.2s ease-out;
+            margin-top: 10px; /* Jarak dari header */
+        }
+
+        .profile-popup.show {
+            display: block;
+        }
+
+        .profile-info p {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+
+        .profile-info strong {
+            font-weight: 800;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        .profile-info .email-text {
+            color: #666;
+            overflow-wrap: break-word; 
+            font-weight: 400;
+        }
+
+        /* Style untuk Loading */
+        .profile-popup .loading-state {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+        }
+
+        /* Animasi untuk memunculkan popup */
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+
+
+<body>
+    
+    <header class="main-header">
+    <div class="logo">PlantAdvisor</div>
+    <nav class="main-nav">
+        <a href="#">Beranda</a>
+        <a href="#tutorial">Tutorial</a>
+        <a href="#footer">Tentang Kami</a>
+    </nav>
+    <div class="header-buttons">
+        
+        <div style="position: relative;">
+            <span class="username-display hidden-btn" id="usernameDisplay"></span>
+            
+            <div class="profile-popup" id="profilePopup">
+                <div class="profile-info">
+                    <strong><span id="popupUsername"></span></strong>
+                    <p>Email:</p>
+                    <p class="email-text" id="popupEmail"></p>
+                </div>
+                <div class="loading-state hidden-btn" id="popupLoading">Mengambil data...</div>
+            </div>
+        </div>
+        <a href="#AII" class="btn btn-primary">Coba AI</a>
+        <a href="login.html" class="btn btn-outline" id="loginBtn">Login</a>
+        <a href="#" class="btn btn-logout hidden-btn" id="logoutBtn">Logout</a>
+    </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-text">
+                <h1>Solusi Cerdas untuk Tanaman yang Lebih Produktif</h1>
+                <p>Plant Advisor adalah platform pintar yang membantu Anda menentukan tanaman dengan lebih mudah dan efektif.</p>
+                <div class="hero-buttons">
+                    <a href="#AII" class="btn btn-primary">Coba AI</a>
+                    <a href="#footer" class="btn btn-outline">Tentang Kami</a>
+                </div>
+            </div>
+            <div class="hero-img">
+                <img src="ilustrasi-tanam.png" alt="Ilustrasi Tanam" />
+            </div>
+        </section>
+
+<section class="tutorial-section" id="tutorial">
+    
+    <div class="carousel-title-container">
+        <h2>Video Tutorial</h2>
+        <p class="tutorial-desc">Belajar merawat tanaman jadi lebih mudah dengan video tutorial Plant Advisor.</p>
+    </div>
+
+    <div class="carousel-wrapper">
+        <button class="scroll-btn left" onclick="scrollVideos(-1)">&#10094;</button>
+
+        <div class="end-message">
+            <p><strong>Panduan Praktis:</strong> Dapatkan langkah mudah memantau dan menjaga kondisi pH, Suhu, dan Kelembaban tanah. Geser ke kiri untuk mengakses seluruh rangkaian video tutorial ini.</p>
+        </div>
+        <div class="video-carousel" id="videoCarousel">
+            
+            <div class="video-item">
+                <iframe
+                    src="https://www.youtube.com/embed/kM7x1K_uCoc"
+                    title="Video 1: Tumbuh Kembang Tanaman"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                ></iframe>
+                <p class="video-caption">Video 1: Tumbuh Kembang Tanaman</p>
+            </div>
+
+            <div class="video-item">
+                <iframe
+                    src="https://www.youtube.com/embed/NaFZwq22YB8"
+                    title="Video 2: 15th UCL"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                ></iframe>
+                <p class="video-caption">Video 2: Tutorial Mendapat UCL ke 15</p>
+            </div>
+
+            <div class="video-item">
+                <iframe
+                    src="https://www.youtube.com/embed/JENpTmMQBQY"
+                    title="Fourtwnty - Mangu ft. Charita Utami ( Official Lyric Video )"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                ></iframe>
+                <p class="video-caption">Video 3: (Mangu - Fourtwnty)</p>
+            </div>
+            
+        </div>
+        
+        <button class="scroll-btn right" onclick="scrollVideos(1)">&#10095;</button>
+    </div>
+</section>
+
+
+        <section class="form-section" id="AII">
+            <h2>MASUKKAN DATA ANDA</h2>
+            <form class="data-form">
+                <label for="kecamatanInput">Daerah Tanah</label>
+                <input id="kecamatanInput" type="text" placeholder="Masukan Kecamatan di Malang Raya">
+                <p id="result" class="validation-msg"></p>
+                
+                <label for="tanamanSebelumnya">Tanaman Sebelumnya (Opsional)</label>
+                <select id="tanamanSebelumnya">
+                    <option value="">Masukan Tanaman Sebelumnya</option>
+                    <option>Padi</option>
+                    <option>Jagung</option>
+                    <option>Kacang</option>
+                    <option>Tidak Ada</option>
+                </select>
+
+                <label for="phInput">PH Tanah</label>
+                <div class="input-with-tooltip-wrapper">
+                    <input type="text" id="phInput" placeholder="Contoh 6.2">
+                    <span class="input-tooltip">Pengukuran Menggunakan Soil pH Meter</span>
+                </div>
+                <p id="phResult" class="validation-msg"></p>
+                <p id="phError" class="error-msg"></p>
+
+
+                <label for="kelembapanInput">Kelembapan Tanah (%)</label>
+                <div class="input-with-tooltip-wrapper">
+                    <input type="text" id="kelembapanInput" placeholder="Masukan 0 - 100">
+                    <span class="input-tooltip">Pengukuran Menggunakan Moisture Meter</span>
+                </div>
+                <p id="kelembapanResult" class="validation-msg"></p>
+                <p id="kelembapanError" class="error-msg"></p>
+
+
+                <label for="suhuInput">Suhu (°C)</label>
+                <div class="input-with-tooltip-wrapper">
+                    <input type="text" id="suhuInput" placeholder="Masukan 15 - 35 °C">
+                    <span class="input-tooltip">Pengukuran Menggunakan Soil Temperature</span>
+                </div>
+                <p id="suhuResult" class="validation-msg"></p>
+                <p id="suhuError" class="error-msg"></p>
+
+
+                <div class="submit-container">
+                    <a href="hasil.html" class="btn btn-submit" id="submitBtn">Submit</a>
+                </div>
+            </form>
+        </section>
+    </main>
+
+
+    <footer id="footer">
+        <div class="footer-container">
+            <h3 class="footer-title">Siapa Plant Advisor itu?</h3>
+            <p class="footer-desc">
+                Plant Advisor adalah platform web berbasis AI yang dirancang untuk membantu Anda memprediksi kecocokan tanah dengan jenis tanaman tertentu.
+            </p>
+            <div class="footer-bottom">
+                © 2025 PlantAdvisor. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+
+    <div class="popup-success" id="successModal">
+        <h3>✅ Data Berhasil Disimpan!</h3>
+        <p>Mengalihkan ke halaman rekomendasi...</p>
+    </div>
+
+
+<script>
+
+// --- URL API ---
+const API_INPUT_URL = "https://plantadvisor.cloud/api/input/store";
+const API_PROFILE_URL = "https://plantadvisor.cloud/api/profile"; // URL PROFILE BARU (Asumsi)
+// --- END URL API ---
+
+
+// =========================================================================
+// === DEKLARASI DAN KONFIGURASI ===
+
+
+const phInput = document.getElementById("phInput");
+const suhuInput = document.getElementById("suhuInput");
+const kelembapanInput = document.getElementById("kelembapanInput");
+const kecamatanInput = document.getElementById("kecamatanInput");
+const tanamanSebelumnyaSelect = document.getElementById("tanamanSebelumnya");
+const submitBtn = document.getElementById("submitBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const loginBtn = document.getElementById("loginBtn");
+
+const phError = document.getElementById("phError");
+const suhuError = document.getElementById("suhuError");
+const kelembapanError = document.getElementById("kelembapanError");
+const resultKecamatan = document.getElementById("result");
+const successModal = document.getElementById("successModal");
+const token = localStorage.getItem("token");
+
+// Tambahan Deklarasi untuk Profil
+const usernameDisplay = document.getElementById("usernameDisplay");
+const username = localStorage.getItem("username"); 
+const profilePopup = document.getElementById("profilePopup");
+const popupUsername = document.getElementById("popupUsername");
+const popupEmail = document.getElementById("popupEmail");
+const popupLoading = document.getElementById("popupLoading");
+
+let userEmail = null;
+let profileFetched = false; // Status untuk mencegah pengambilan data berulang
+
+const kecamatanMalangRaya = [
+    "Ampelgading","Bantur","Bululawang","Dampit","Dau","Donomulyo",
+    "Gedangan","Gondanglegi","Jabung","Kalipare","Karangploso","Kasembon",
+    "Kepanjen","Kromengan","Lawang","Ngajum","Ngantang","Pagak","Pagelaran",
+    "Pakis","Pakisaji","Poncokusumo","Sumbermanjing Wetan","Singosari",
+    "Sumberpucung","Tajinan","Tirtoyudo","Tumpang","Turen","Wagir","Wajak",
+    "Wonosari","Pujon","Blimbing","Klojen","Kedungkandang","Sukun","Lowokwaru",
+    "Batu","Bumiaji","Junrejo"
+];
+
+
+let isKecamatanValid = false;
+let isPhValid = false;
+let isKelembapanValid = false;
+let isSuhuValid = false;
+
+
+// =========================================================================
+// === FUNGSI LOGIKA (VALIDASI, UTILITY, DLL) ===
+
+
+function showNotification(message, isSuccess = true) {
+    const popup = document.getElementById("successModal");
+    const h3 = popup.querySelector('h3');
+    const p = popup.querySelector('p');
+
+    if (!isSuccess) {
+        h3.textContent = "❌ Proses Gagal!";
+        p.textContent = message;
+        popup.style.background = '#ffebeb';
+        popup.style.border = '1px solid #dc3545';
+        h3.style.color = '#dc3545';
+    } else {
+        h3.textContent = "✅ Data Berhasil Disimpan!";
+        p.textContent = message;
+        popup.style.background = '#f0fff0';
+        popup.style.border = '1px solid #28a745';
+        h3.style.color = '#28a745';
+    }
+    popup.style.display = "block";
+    popup.style.animation = 'slideInFromRight 0.4s ease-out forwards';
+}
+
+function checkFormValidity() {
+    const allValid = isKecamatanValid && isPhValid && isKelembapanValid && isSuhuValid;
+    if (allValid) {
+        submitBtn.classList.add("enabled");
+        submitBtn.classList.remove("disabled");
+        submitBtn.href = "#";
+    } else {
+        submitBtn.classList.remove("enabled");
+        submitBtn.classList.add("disabled");
+        submitBtn.href = "hasil.html";
+    }
+    return allValid;
+}
+
+submitBtn.classList.add("disabled");
+
+function restrictInput(inputField) {
+    inputField.addEventListener("input", function () {
+        this.value = this.value.replace(/[^0-9.]/g, "");
+        let parts = this.value.split(".");
+        if (parts.length > 2) this.value = parts[0] + "." + parts.slice(1).join("");
+    });
+}
+restrictInput(phInput);
+restrictInput(kelembapanInput);
+restrictInput(suhuInput);
+
+
+/* === Validasi PH === */
+function validatePh() {
+    const value = parseFloat(phInput.value);
+    const el = document.getElementById("phResult");
+    
+    if (phInput.value.trim() === "") {
+        el.textContent = "";
+        phInput.classList.remove("input-valid","input-invalid");
+        isPhValid = false;
+    } else if (!isNaN(value) && value >= 0 && value <= 14) {
+        el.textContent = "✓ PH valid: " + value;
+        el.style.color = "var(--color-success)";
+        phInput.classList.add("input-valid");
+        phInput.classList.remove("input-invalid");
+        isPhValid = true;
+    } else {
+        el.textContent = "✗ PH harus 0 - 14";
+        el.style.color = "var(--color-danger)";
+        phInput.classList.add("input-invalid");
+        phInput.classList.remove("input-valid");
+        isPhValid = false;
+    }
+    checkFormValidity();
+}
+
+
+/* === Validasi Kelembapan === */
+function validateKelembapan() {
+    const value = parseFloat(kelembapanInput.value);
+    const el = document.getElementById("kelembapanResult");
+    
+    if (kelembapanInput.value.trim() === "") {
+        el.textContent = "";
+        kelembapanInput.classList.remove("input-valid","input-invalid");
+        isKelembapanValid = false;
+    } else if (!isNaN(value) && value >= 0 && value <= 100) {
+        el.textContent = "✓ Kelembapan valid: " + value + "%";
+        el.style.color = "var(--color-success)";
+        kelembapanInput.classList.add("input-valid");
+        kelembapanInput.classList.remove("input-invalid");
+        isKelembapanValid = true;
+    } else {
+        el.textContent = "✗ Kelembapan harus 0 - 100%";
+        el.style.color = "var(--color-danger)";
+        kelembapanInput.classList.add("input-invalid");
+        kelembapanInput.classList.remove("input-valid");
+        isKelembapanValid = false;
+    }
+    checkFormValidity();
+}
+
+
+/* === Validasi Suhu === */
+function validateSuhu() {
+    const value = parseFloat(suhuInput.value);
+    const el = document.getElementById("suhuResult");
+    
+    if (suhuInput.value.trim() === "") {
+        el.textContent = "";
+        suhuInput.classList.remove("input-valid","input-invalid");
+        isSuhuValid = false;
+    } else if (!isNaN(value) && value >= 15 && value <= 35) {
+        el.textContent = "✓ Suhu valid: " + value + "°C";
+        el.style.color = "var(--color-success)";
+        suhuInput.classList.add("input-valid");
+        suhuInput.classList.remove("input-invalid");
+        isSuhuValid = true;
+    } else {
+        el.textContent = "✗ Suhu harus 15 - 35°C";
+        el.style.color = "var(--color-danger)";
+        suhuInput.classList.add("input-invalid");
+        suhuInput.classList.remove("input-valid");
+        isSuhuValid = false;
+    }
+    checkFormValidity();
+}
+
+
+/* === Validasi Kecamatan === */
+function validateKecamatan() {
+    const input = kecamatanInput.value.toLowerCase().trim();
+    resultKecamatan.textContent = "";
+    kecamatanInput.classList.remove("input-valid","input-invalid");
+    
+    if (input === "") {
+        isKecamatanValid = false;
+    } else {
+        const found = kecamatanMalangRaya.find(k => k.toLowerCase() === input);
+        if (found) {
+            resultKecamatan.textContent = "✓ Kecamatan ditemukan: " + found;
+            resultKecamatan.style.color = "var(--color-success)";
+            kecamatanInput.classList.add("input-valid");
+            isKecamatanValid = true;
+        } else {
+            // PESAN TIDAK DITEMUKAN MUNCUL DI SINI
+            resultKecamatan.textContent = "✗ Kecamatan tidak ditemukan";
+            resultKecamatan.style.color = "var(--color-danger)";
+            kecamatanInput.classList.add("input-invalid");
+            isKecamatanValid = false;
+        }
+    }
+    checkFormValidity();
+}
+
+
+// =========================================================================
+// === LOGIKA CAROUSEL INTERAKTIF (FOKUS SISI KIRI - TANPA LOOP) ===
+
+const videoCarousel = document.getElementById('videoCarousel');
+const videoItems = document.querySelectorAll('.video-item');
+const totalItems = videoItems.length;
+
+// Ambil tombol panah dan pesan akhir (Diperlukan untuk JS)
+const leftBtn = document.querySelector('.scroll-btn.left');
+const rightBtn = document.querySelector('.scroll-btn.right');
+const endMessage = document.querySelector('.end-message'); 
+
+
+// --- FUNGSI UPDATE FOKUS/ACTIVE ---
+function updateActiveVideo() {
+    const scrollLeft = videoCarousel.scrollLeft;
+    
+    let closestItem = null;
+    let minDistance = Infinity;
+    
+    // FIX PADDING: SESUAIKAN DENGAN CSS PADDING-LEFT TERBARU (20px)
+    const containerPaddingLeft = 20; 
+
+    // Logika Deteksi Fokus Sisi Kiri Normal
+    videoItems.forEach((item) => {
+        // Koreksi posisi item: item.offsetLeft - padding kiri kontainer
+        const itemLeftCorrected = item.offsetLeft - containerPaddingLeft; 
+        const distance = Math.abs(itemLeftCorrected - scrollLeft);
+
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestItem = item;
+        }
+    });
+
+    // Terapkan kelas 'active' dan cek video terakhir
+    videoItems.forEach(item => item.classList.remove('active'));
+    let isLastVideoActive = false;
+
+    if (closestItem) {
+        closestItem.classList.add('active');
+        
+        // Cek apakah video yang aktif adalah video terakhir dalam daftar
+        if (closestItem === videoItems[totalItems - 1]) {
+            isLastVideoActive = true;
+        }
+    }
+    
+    // LOGIKA PESAN AKHIR: Tampilkan hanya jika video terakhir aktif
+    if (endMessage) {
+        if (isLastVideoActive) {
+            endMessage.style.opacity = 1; 
+            endMessage.style.visibility = 'visible';
+        } else {
+            endMessage.style.opacity = 0;
+            endMessage.style.visibility = 'hidden';
+        }
+    }
+}
+
+
+// --- FUNGSI SCROLL NORMAL (TANPA LOGIKA LOOP) ---
+function scrollVideos(direction) {
+    const item = videoCarousel.querySelector('.video-item');
+    if (!item) return; 
+    
+    // Margin total = 20px
+    const itemWidth = item.offsetWidth; 
+    const margin = 20; 
+    const scrollDistance = itemWidth + margin;
+    
+    // Gulir normal menggunakan scrollBy (akan otomatis berhenti di batas awal/akhir)
+    videoCarousel.scrollBy({
+        left: direction * scrollDistance, 
+        behavior: 'smooth'
+    });
+
+    // Panggil updateActiveVideo setelah scroll selesai
+    // Tambahkan delay yang lebih panjang (misal 500ms) untuk memastikan update Active
+    setTimeout(updateActiveVideo, 500); 
+}
+
+
+// === EVENT LISTENERS CAROUSEL ===
+
+// 1. Deteksi scroll manual/touch
+videoCarousel.addEventListener('scroll', updateActiveVideo);
+
+// 2. Tambahkan event listener untuk tombol (Diperlukan karena Anda memanggil scrollVideos() dari HTML)
+if (leftBtn) {
+    leftBtn.addEventListener('click', () => scrollVideos(-1));
+}
+if (rightBtn) {
+    rightBtn.addEventListener('click', () => scrollVideos(1));
+}
+
+
+// 3. Inisialisasi tampilan awal
+window.addEventListener('load', () => {
+    videoCarousel.scrollTo({ left: 0, behavior: 'instant' }); 
+    updateActiveVideo(); 
+});
+
+
+// =========================================================================
+// === LOGIKA PENGAMBILAN PROFIL DARI API ===
+
+async function fetchUserProfile(token) {
+    if (profileFetched) return; // Jika sudah diambil, keluar
+
+    // Tampilkan loading state di popup
+    popupLoading.classList.remove('hidden-btn'); 
+    popupUsername.textContent = username || "User";
+    popupEmail.textContent = "Mengambil...";
+
+    try {
+        const res = await fetch(API_PROFILE_URL, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await res.json();
+
+        if (res.status !== 200) {
+            throw new Error(data.message || "Gagal mengambil data profil.");
+        }
+
+        userEmail = data.email || "Email tidak ditemukan"; // Ambil email dari respons API
+        profileFetched = true;
+        
+        // Perbarui tampilan popup dengan data yang sebenarnya
+        popupUsername.textContent = username || "User";
+        popupEmail.textContent = userEmail;
+        popupLoading.classList.add('hidden-btn'); // Sembunyikan loading
+
+    } catch (error) {
+        console.error("Error mengambil profil:", error);
+        popupUsername.textContent = username || "User";
+        popupEmail.textContent = "Gagal memuat email.";
+        popupLoading.classList.add('hidden-btn');
+    }
+}
+
+
+// =========================================================================
+// === LOGIKA TAMPILAN HEADER, LOGOUT & GEOLOCATION ===
+
+/* === LOGIKA TAMPILAN LOGIN/LOGOUT dan POPUP TOGGLE === */
+if (token) {
+    // Tampilkan tombol Logout dan Username
+    if (logoutBtn) logoutBtn.classList.remove('hidden-btn');
+    if (loginBtn) loginBtn.classList.add('hidden-btn');
+
+    let displayUsername = username || "User";
+    if (usernameDisplay) {
+        usernameDisplay.textContent = "Hi, " + displayUsername;
+        usernameDisplay.classList.remove('hidden-btn');
+    }
+
+    // Logika Popup Toggle
+    if (usernameDisplay && profilePopup) {
+        
+        // Event listener untuk toggle popup
+        usernameDisplay.addEventListener('click', function(e) {
+            e.stopPropagation(); // Mencegah event bubble ke document
+            
+            // Panggil API saat pertama kali diklik
+            if (!profileFetched) {
+                fetchUserProfile(token);
+            } else {
+                // Jika sudah diambil, pastikan data yang terakhir berhasil diambil ditampilkan
+                popupUsername.textContent = displayUsername;
+                popupEmail.textContent = userEmail;
+            }
+
+            profilePopup.classList.toggle('show');
+        });
+
+        // Menutup popup saat klik di luar area popup
+        document.addEventListener('click', function(e) {
+            if (profilePopup.classList.contains('show') && !usernameDisplay.contains(e.target) && !profilePopup.contains(e.target)) {
+                profilePopup.classList.remove('show');
+            }
+        });
+
+        // Mencegah popup tertutup saat klik di dalamnya
+        profilePopup.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+
+} else {
+    // Tidak ada token (belum login)
+    if (logoutBtn) logoutBtn.classList.add('hidden-btn');
+    if (loginBtn) loginBtn.classList.remove('hidden-btn');
+    if (usernameDisplay) usernameDisplay.classList.add('hidden-btn'); 
+}
+
+
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Hapus semua data
+        localStorage.removeItem("token");
+        localStorage.removeItem("user_id");
+        localStorage.removeItem('last_input_id');
+        localStorage.removeItem("username");
+        // Reset status cache email/profil
+        userEmail = null;
+        profileFetched = false; 
+
+        window.location.href = window.location.href.split('#')[0];
+    });
+}
+
+
+/* === GEOLOCATION (Hanya dijalankan jika ada token) === */
+if (token) {
+    kecamatanInput.disabled = true;
+    kecamatanInput.placeholder = "Mengambil lokasi otomatis...";
+
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        try {
+            const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            
+            let kecamatan = data.address.suburb || data.address.village || data.address.city_district || data.address.town || null;
+            
+            kecamatanInput.disabled = false; // Aktifkan input kembali
+            
+            if (kecamatan) {
+                kecamatanInput.value = kecamatan;
+                validateKecamatan(); // Langsung validasi hasil auto-fill
+            } else {
+                kecamatanInput.placeholder = "Lokasi tidak ditemukan, isi manual";
+                validateKecamatan();
+            }
+        } catch (err) {
+            kecamatanInput.disabled = false;
+            kecamatanInput.placeholder = "Gagal ambil lokasi, isi manual";
+        }
+    }, () => {
+        // Geolocation ditolak/gagal
+        kecamatanInput.disabled = false;
+        kecamatanInput.placeholder = "Izin lokasi ditolak, isi manual";
+    });
+} else {
+    // Jika tidak login, biarkan input aktif
+    kecamatanInput.disabled = false;
+}
+
+// =========================================================================
+// === PASANG SEMUA EVENT LISTENERS DI SINI (Dijamin berjalan) ===
+
+phInput.addEventListener("input", validatePh);
+kelembapanInput.addEventListener("input", validateKelembapan);
+suhuInput.addEventListener("input", validateSuhu);
+// INI ADALah LISTENER UTAMA YANG MENYEBABKAN PESAN "TIDAK DITEMUKAN" MUNCUL REAL-TIME
+kecamatanInput.addEventListener("input", validateKecamatan); 
+
+
+// =========================================================================
+// === SUBMIT (Integrasi ke API) ===
+
+submitBtn.addEventListener("click", async function (e) {
+    e.preventDefault();
+    
+    validatePh(); validateSuhu(); validateKelembapan(); validateKecamatan();
+
+    if (!isKecamatanValid) {
+        resultKecamatan.textContent = "✗ Kecamatan harus diisi dan valid.";
+        resultKecamatan.style.color = "var(--color-danger)";
+    }
+    
+    phError.textContent = !isPhValid ? "Input PH harus 0 - 14." : "";
+    suhuError.textContent = !isSuhuValid ? "Input Suhu harus 15 - 35 °C." : "";
+    kelembapanError.textContent = !isKelembapanValid ? "Input Kelembapan harus 0 - 100%." : "";
+
+
+    if (checkFormValidity()) {
+        const dataInput = {
+            soil_ph: phInput.value,
+            location: kecamatanInput.value,
+            temperature: suhuInput.value,
+            humidity: kelembapanInput.value,
+            previous_crop: tanamanSebelumnyaSelect.value || null
+        };
+
+        const originalBtnText = submitBtn.textContent;
+        submitBtn.textContent = "Menyimpan Data...";
+        submitBtn.classList.add("disabled"); 
+
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`; 
+            }
+
+            // --- PANGGIL API UNTUK SIMPAN INPUT ---
+            const resInput = await fetch(API_INPUT_URL, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(dataInput)
+            });
+
+            const resultInput = await resInput.json();
+
+            if (resInput.status !== 200 && resInput.status !== 201) {
+                throw new Error(resultInput.message || "Gagal menyimpan data input ke server.");
+            }
+
+            const inputId = resultInput.input_id || resultInput.data?.input_id;
+            localStorage.setItem('input_id', inputId);
+            
+            submitBtn.textContent = "Data Tersimpan";
+            
+            showNotification("Mengalihkan ke halaman rekomendasi...", true);
+            setTimeout(() => window.location.href = "hasil.html", 2000);
+
+        } catch (error) {
+            submitBtn.textContent = originalBtnText;
+            submitBtn.classList.remove("disabled");
+            submitBtn.href = "#"; 
+            console.error("Proses Integrasi Gagal:", error);
+            showNotification(error.message || "Koneksi ke server gagal. Cek konsol.", false);
+        }
+    }
+});
+</script>
+</body>
+</html>
