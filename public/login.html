@@ -1,148 +1,249 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plant Advisor | Login</title>
-<link rel="stylesheet" href="style.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Advisor | Login</title>
 
-<style>
-/* --- CSS yang sudah ada di halaman Login --- */
-.error-msg {
-    color: #dc3545; /* Merah */
-    font-size: 14px;
-    margin: 4px 0 10px 0;
-    padding: 0;
-    min-height: 15px; /* Menjaga layout stabil */
-}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
-/* Tambahan: Error untuk pesan di dalam card, misal Email Not Verified */
-.login-error-general {
-    color: #721c24; 
-    background: #f8d7da; /* Background merah muda */
-    border: 1px solid #f5c6cb;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 600;
-    display: none; /* Default tersembunyi */
-}
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-.forgot-pass {
-    text-align: center;
-    margin-top: 15px;
-    font-size: 14px;
-}
+        body, .login-page {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(
+                rgba(0,0,0,0.55),
+                rgba(0,0,0,0.55)
+            ), url('login.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-.forgot-pass a {
-    color: white; 
-    text-decoration: none;
-    font-weight: 500;
-}
+        .login-card {
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 95%;
+            max-width: 800px; 
+            padding: 60px 80px;
+            border-radius: 22px;
+            box-shadow: 0 20px 45px rgba(0,0,0,0.55);
+            color: white;
+            position: relative;
+        }
 
-.forgot-pass a:hover {
-    text-decoration: underline;
-}
+        .header-center {
+            text-align: center;
+            margin-bottom: 40px;
+        }
 
-/* --- CSS POPUP SUKSES/ERROR (Fixed Position) --- */
-.popup-fixed{
-    position:fixed;
-    top:20px;
-    right:20px;
-    width:250px; 
-    height:auto;
-    z-index:9999;
-    border-radius:8px; 
-    padding:10px 15px; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-    font-family: 'Inter', sans-serif;
-    text-align: left; 
-    opacity: 0;
-    transform: translateX(120%);
-    display: none; 
-}
+        .brand {
+            font-size: 42px;
+            font-weight: 800;
+            color: #28a745;
+            margin: 0;
+            white-space: nowrap;
+            display: block;
+        }
 
-.popup-success{
-    background: #f0fff0; 
-    border: 1px solid #28a745; 
-    color:#333; 
-}
-.popup-success h3{
-    color:#28a745; 
-}
+        .register-text {
+            margin-top: 12px;
+            font-size: 16px;
+            color: #ccc;
+        }
 
-.popup-error{
-    background: #fff0f0; 
-    border: 1px solid #dc3545; 
-    color:#333; 
-}
-.popup-error h3{
-    color:#dc3545; 
-}
+        .register-text a {
+            color: #28a745;
+            text-decoration: none;
+            font-weight: 600;
+        }
 
-.popup-fixed h3{
-    margin-top:0;
-    margin-bottom:2px;
-    font-size:14px; 
-    font-weight: 600; 
-}
+        .login-title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 32px;
+        }
 
-.popup-fixed p{
-    margin:0;
-    font-size:12px; 
-    color:#555; 
-}
+        /* Error Messages */
+        .error-msg {
+            color: #ff6b6b;
+            font-size: 12px;
+            margin-top: 4px;
+            height: 14px;
+        }
 
-/* Styling untuk indikasi validasi */
-.input-invalid {
-    border: 2px solid #dc3545 !important;
-}
-.input-valid {
-    border: 2px solid #28a745 !important;
-}
+        .general-error {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid #ff6b6b;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
 
-/* Notifikasi URL Status Verifikasi */
-.notification-banner {
-    padding: 10px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    font-size: 14px;
-    font-weight: 600;
-    display: none; /* Default tersembunyi */
-    /* Warna akan diset oleh JS */
-}
+        #statusNotification {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
 
-</style>
+        form {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 18px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #dcdcdc;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            height: 50px;
+            padding: 0 20px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 10px;
+            color: white;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input.input-invalid { border-color: #ff6b6b; }
+        input.input-valid { border-color: #28a745; }
+
+        input:focus {
+            border-color: #28a745;
+            background: rgba(255,255,255,0.18);
+        }
+
+        .btn-login {
+            height: 52px;
+            font-size: 17px;
+            font-weight: 800;
+            background: #28a745;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .forgot-pass {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 15px;
+        }
+
+        .forgot-pass a {
+            color: #28a745;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        /* --- POPUP STYLES UPDATED --- */
+        .popup-fixed {
+            position: fixed;
+            top: 20px;
+            right: -400px;
+            width: 250px; /* Ukuran lebih kecil */
+            padding: 15px 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        /* Popup Berhasil: BG Putih, Teks Hijau */
+        .popup-success { 
+            background: #ffffff; 
+            border-left: 5px solid #28a745;
+        }
+        .popup-success h3 { 
+            color: #28a745; 
+            margin: 0; 
+            font-size: 16px;
+            font-weight: 800;
+        }
+        .popup-success p { 
+            color: #555; 
+            margin: 5px 0 0 0;
+            font-size: 13px;
+        }
+
+        .popup-error { background: #dc3545; color: white; }
+
+        @keyframes slideInFromRight {
+            from { right: -400px; opacity: 0; }
+            to { right: 20px; opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .login-card { padding: 48px 30px; }
+            .brand { font-size: 32px; }
+        }
+    </style>
 </head>
 
 <body>
+
 <div class="login-page">
     <div class="login-card">
+        
+        <div id="statusNotification"></div>
 
         <div class="header-center">
-            <h1 class="brand">Plant <span>Advisor</span></h1>
+            <h1 class="brand">Plant Advisor</h1>
             <p class="register-text">
                 Don't Have an Account? <a href="register.html">Register</a>
             </p>
         </div>
-        
-        <div id="statusNotification" class="notification-banner"></div>
-        <h1 class="login-title">Login</h1>
-        
-        <div id="generalLoginError" class="login-error-general"></div>
-        <form id="loginForm" class="login-form">
 
-            <label>Username</label>
-            <input type="text" id="username" placeholder="Masukan Username">
-            <p id="userError" class="error-msg"></p>
+        <h2 class="login-title">Login</h2>
 
-            <label>Password</label>
-            <input type="password" id="password" placeholder="Masukan Password">
-            <p id="passError" class="error-msg"></p>
+        <div id="generalLoginError" class="general-error"></div>
 
-            <button type="submit" class="btn-login" id="loginButton">Login</button>
+        <form id="loginForm">
+            <div class="field-group">
+                <label for="username">Username</label>
+                <input id="username" type="text" placeholder="Masukkan username">
+                <div id="userError" class="error-msg"></div>
+            </div>
+
+            <div class="field-group">
+                <label for="password">Password</label>
+                <input id="password" type="password" placeholder="Masukkan password">
+                <div id="passError" class="error-msg"></div>
+            </div>
+
+            <button type="submit" id="loginButton" class="btn-login">Login</button>
         </form>
 
         <p class="forgot-pass">
@@ -152,19 +253,17 @@
 </div>
 
 <div class="popup-fixed popup-success" id="successLoginPopup">
-    <h3>Login Berhasil!</h3>
-    <p>Mengalihkan dalam 2 detik...</p>
+    <h3>Berhasil Login!</h3>
+    <p>Mengalihkan halaman...</p>
 </div>
 
 <div class="popup-fixed popup-error" id="errorPopup">
-    <h3>Koneksi Gagal</h3>
+    <h3>Terjadi Kesalahan</h3>
     <p id="errorPopupMessage">Pastikan server Anda berjalan.</p>
 </div>
 
-
 <script>
-    // URL BACKEND LOKAL LARAVEL DEFAULT
-    const API_LOGIN_URL = "http://127.0.0.1:8000/api/login"; 
+    const API_LOGIN_URL = "https://plantadvisor.cloud/api/login"; 
 
     const loginForm = document.getElementById("loginForm");
     const usernameInput = document.getElementById("username");
@@ -180,13 +279,14 @@
     const errorPopup = document.getElementById("errorPopup");
     const errorPopupMessage = document.getElementById("errorPopupMessage");
 
-    // Helper untuk popup
     function showPopup(popupEl, message = '', isError = false) {
         if (isError) {
             errorPopupMessage.textContent = message;
             popupEl = errorPopup;
-        } else if (message) {
-            popupEl.querySelector('p').textContent = message;
+        } else if (message && !isError) {
+            // Kita bisa update sub-text jika perlu
+            const p = popupEl.querySelector('p');
+            if(p) p.textContent = message;
         }
 
         popupEl.style.display = 'block';
@@ -200,7 +300,6 @@
         }
     }
 
-    // Status URL Verifikasi Email
     function handleVerificationStatus() {
         const urlParams = new URLSearchParams(window.location.search);
         const status = urlParams.get('verified');
@@ -210,16 +309,13 @@
 
         if (status === 'true') {
             message = "🎉 Verifikasi berhasil! Silakan login.";
-            bgColor = '#d4edda';
-            color = '#155724';
+            bgColor = '#d4edda'; color = '#155724';
         } else if (status === 'already') {
             message = "✅ Akun Anda sudah terverifikasi. Silakan login.";
-            bgColor = '#d4edda';
-            color = '#155724';
+            bgColor = '#d4edda'; color = '#155724';
         } else if (status === 'invalid_token') {
             message = "❌ Tautan verifikasi tidak valid atau kedaluwarsa.";
-            bgColor = '#f8d7da';
-            color = '#721c24';
+            bgColor = '#f8d7da'; color = '#721c24';
         }
 
         if (message) {
@@ -233,45 +329,28 @@
 
     handleVerificationStatus();
 
-    // FORM SUBMIT
     loginForm.addEventListener("submit", async function(e) {
         e.preventDefault();
 
-        // Reset error
         generalLoginError.style.display = 'none';
         userError.textContent = "";
         passError.textContent = "";
-
         usernameInput.classList.remove("input-valid", "input-invalid");
         passwordInput.classList.remove("input-valid", "input-invalid");
 
         let valid = true;
-
-        // Validasi username FE
         if (usernameInput.value.trim() === "") {
             valid = false;
             userError.textContent = "Username tidak boleh kosong";
             usernameInput.classList.add("input-invalid");
         }
-
-        // Validasi password FE
         if (passwordInput.value.trim() === "") {
             valid = false;
             passError.textContent = "Password tidak boleh kosong";
             passwordInput.classList.add("input-invalid");
         }
 
-        if (valid) {
-            usernameInput.classList.add("input-valid");
-            passwordInput.classList.add("input-valid");
-        }
-
         if (!valid) return;
-
-        const data = {
-            username: usernameInput.value.trim(),
-            password: passwordInput.value.trim()
-        };
 
         loginButton.textContent = "Logging in...";
         loginButton.disabled = true;
@@ -280,82 +359,52 @@
             const response = await fetch(API_LOGIN_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: JSON.stringify({
+                    username: usernameInput.value.trim(),
+                    password: passwordInput.value.trim()
+                })
             });
 
             const result = await response.json();
-
             loginButton.textContent = "Login";
             loginButton.disabled = false;
 
-            // --- 200 OK ---
             if (response.ok) {
-
                 if (result.token) localStorage.setItem('token', result.token);
                 if (result.user_id) localStorage.setItem('user_id', result.user_id);
+                
+                const loggedInUsername = result.username || (result.user && result.user.username);
+                localStorage.setItem('username', loggedInUsername || usernameInput.value.trim());
 
                 showPopup(successLoginPopup, "Mengalihkan dalam 2 detik...");
-
-                setTimeout(() => {
-                    window.location.href = "beranda.html";
-                }, 2000);
-            }
-
-            // --- 401 Wrong Credential ---
+                setTimeout(() => { window.location.href = "beranda.html"; }, 2000);
+            } 
             else if (response.status === 401) {
                 userError.textContent = result.message || "Username atau password salah.";
                 usernameInput.classList.add("input-invalid");
                 passwordInput.classList.add("input-invalid");
-            }
-
-            // --- 403 Belum Verifikasi ---
+            } 
             else if (response.status === 403) {
-                generalLoginError.textContent =
-                    result.message || "Akun belum aktif. Mohon verifikasi email Anda.";
+                generalLoginError.textContent = result.message || "Akun belum aktif.";
                 generalLoginError.style.display = 'block';
-                usernameInput.classList.add("input-invalid");
-                passwordInput.classList.add("input-invalid");
-            }
-
-            // --- 422 Laravel Validation Error ---
+            } 
             else if (response.status === 422) {
                 if (result.errors) {
-
-                    if (result.errors.username) {
-                        userError.textContent = result.errors.username[0];
-                        usernameInput.classList.add("input-invalid");
-                    }
-
-                    if (result.errors.password) {
-                        passError.textContent = result.errors.password[0];
-                        passwordInput.classList.add("input-invalid");
-                    }
-
-                } else {
-                    generalLoginError.textContent =
-                        result.message || "Input tidak valid.";
-                    generalLoginError.style.display = 'block';
+                    if (result.errors.username) userError.textContent = result.errors.username[0];
+                    if (result.errors.password) passError.textContent = result.errors.password[0];
                 }
-            }
-
-            // --- ERROR LAINNYA ---
+            } 
             else {
-                showPopup(
-                    errorPopup,
-                    result.message || `Terjadi kesalahan server (${response.status}).`,
-                    true
-                );
+                showPopup(errorPopup, result.message || `Error ${response.status}`, true);
             }
 
         } catch (error) {
             loginButton.textContent = "Login";
             loginButton.disabled = false;
-            console.error("Fetch Error:", error);
-            showPopup(errorPopup, "Koneksi gagal. Pastikan server Laravel Anda berjalan.", true);
+            showPopup(errorPopup, "Koneksi gagal. Periksa server Laravel Anda.", true);
         }
     });
 </script>
-
 
 </body>
 </html>

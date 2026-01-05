@@ -13,28 +13,120 @@
             to { transform: translateX(0); opacity: 1; }
         }
         .popup-success{
-            position:fixed; top:20px; right:20px; width:250px; background: #f0fff0; color:#333; display:none; 
-            z-index:9999; border-radius:8px; padding:10px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            position:fixed; top:20px; right:20px; width:250px; background: #f0fff0; color:#333; display:none;
+            z-index:9999; border-radius:8px; padding:10px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             border: 1px solid #28a745; font-family: 'Inter', sans-serif; text-align: left; opacity: 0;
         }
         /* Style untuk menyembunyikan/menampilkan tombol */
         .hidden-btn { display: none !important; }
+
+        /* Tambahkan di file style.css atau di tag <style> */
+       .username-display {
+            color: black; /* Diubah menjadi hitam */
+            font-weight: 600;
+            margin-right: 15px;
+            padding: 8px 10px;
+            border-radius: 5px;
+            white-space: nowrap;
+            cursor: pointer; /* Menandakan bahwa ini dapat diklik */
+        }
+
+        /* Pastikan semua tombol memiliki margin yang seragam jika Anda menggunakan Flexbox di header-buttons */
+        .header-buttons a, .header-buttons .username-display {
+            margin-left: 10px;
+        }
+        
+        /* Modifikasi untuk Positioning Relatif pada Header Buttons Container */
+        .header-buttons {
+            position: relative; /* PENTING: Untuk menempatkan .profile-popup secara absolut di dalamnya */
+            display: flex;
+            align-items: center;
+        }
+
+        /* Style untuk popup profil */
+        .profile-popup {
+            position: absolute;
+            top: 100%; /* Akan muncul tepat di bawah .username-display */
+            right: 0;
+            width: 250px;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            padding: 15px;
+            display: none; /* Sembunyikan secara default */
+            transform-origin: top right;
+            animation: fadeInScale 0.2s ease-out;
+            margin-top: 10px; /* Jarak dari header */
+        }
+
+        .profile-popup.show {
+            display: block;
+        }
+
+        .profile-info p {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+
+        .profile-info strong {
+            font-weight: 800;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        .profile-info .email-text {
+            color: #666;
+            overflow-wrap: break-word; 
+            font-weight: 400;
+        }
+
+        /* Style untuk Loading */
+        .profile-popup .loading-state {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+        }
+
+        /* Animasi untuk memunculkan popup */
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 
+
 <body>
+    
     <header class="main-header">
-        <div class="logo">PlantAdvisor</div>
-        <nav class="main-nav">
-            <a href="#">Beranda</a>
-            <a href="#tutorial">Tutorial</a>
-            <a href="#footer">Tentang Kami</a>
-        </nav>
-        <div class="header-buttons">
-            <a href="#AII" class="btn btn-primary">Coba AI</a>
-            <a href="login.html" class="btn btn-outline" id="loginBtn">Login</a>
-            <a href="#" class="btn btn-logout hidden-btn" id="logoutBtn">Logout</a> 
+    <div class="logo">PlantAdvisor</div>
+    <nav class="main-nav">
+        <a href="#">Beranda</a>
+        <a href="#tutorial">Tutorial</a>
+        <a href="#footer">Tentang Kami</a>
+    </nav>
+    <div class="header-buttons">
+        
+        <div style="position: relative;">
+            <span class="username-display hidden-btn" id="usernameDisplay"></span>
+            
+            <div class="profile-popup" id="profilePopup">
+                <div class="profile-info">
+                    <strong><span id="popupUsername"></span></strong>
+                    <p>Email:</p>
+                    <p class="email-text" id="popupEmail"></p>
+                </div>
+                <div class="loading-state hidden-btn" id="popupLoading">Mengambil data...</div>
+            </div>
         </div>
+        <a href="#AII" class="btn btn-primary">Coba AI</a>
+        <a href="login.html" class="btn btn-outline" id="loginBtn">Login</a>
+        <a href="#" class="btn btn-logout hidden-btn" id="logoutBtn">Logout</a>
+    </div>
     </header>
 
     <main>
@@ -68,33 +160,33 @@
         <div class="video-carousel" id="videoCarousel">
             
             <div class="video-item">
-                <iframe 
-                    src="https://www.youtube.com/embed/kM7x1K_uCoc" 
-                    title="Video 1: Tumbuh Kembang Tanaman" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                <iframe
+                    src="https://www.youtube.com/embed/kM7x1K_uCoc"
+                    title="Video 1: Tumbuh Kembang Tanaman"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen
                 ></iframe>
                 <p class="video-caption">Video 1: Tumbuh Kembang Tanaman</p>
             </div>
 
             <div class="video-item">
-                <iframe 
-                    src="https://www.youtube.com/embed/NaFZwq22YB8" 
-                    title="Video 2: 15th UCL" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                <iframe
+                    src="https://www.youtube.com/embed/NaFZwq22YB8"
+                    title="Video 2: 15th UCL"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen
                 ></iframe>
                 <p class="video-caption">Video 2: Tutorial Mendapat UCL ke 15</p>
             </div>
 
             <div class="video-item">
-                <iframe 
-                    src="https://www.youtube.com/embed/JENpTmMQBQY" 
-                    title="Fourtwnty - Mangu ft. Charita Utami ( Official Lyric Video )" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                <iframe
+                    src="https://www.youtube.com/embed/JENpTmMQBQY"
+                    title="Fourtwnty - Mangu ft. Charita Utami ( Official Lyric Video )"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen
                 ></iframe>
                 <p class="video-caption">Video 3: (Mangu - Fourtwnty)</p>
@@ -105,6 +197,7 @@
         <button class="scroll-btn right" onclick="scrollVideos(1)">&#10095;</button>
     </div>
 </section>
+
 
         <section class="form-section" id="AII">
             <h2>MASUKKAN DATA ANDA</h2>
@@ -130,6 +223,7 @@
                 <p id="phResult" class="validation-msg"></p>
                 <p id="phError" class="error-msg"></p>
 
+
                 <label for="kelembapanInput">Kelembapan Tanah (%)</label>
                 <div class="input-with-tooltip-wrapper">
                     <input type="text" id="kelembapanInput" placeholder="Masukan 0 - 100">
@@ -137,6 +231,7 @@
                 </div>
                 <p id="kelembapanResult" class="validation-msg"></p>
                 <p id="kelembapanError" class="error-msg"></p>
+
 
                 <label for="suhuInput">Suhu (°C)</label>
                 <div class="input-with-tooltip-wrapper">
@@ -146,12 +241,14 @@
                 <p id="suhuResult" class="validation-msg"></p>
                 <p id="suhuError" class="error-msg"></p>
 
+
                 <div class="submit-container">
                     <a href="hasil.html" class="btn btn-submit" id="submitBtn">Submit</a>
                 </div>
             </form>
         </section>
     </main>
+
 
     <footer id="footer">
         <div class="footer-container">
@@ -165,18 +262,24 @@
         </div>
     </footer>
 
+
     <div class="popup-success" id="successModal">
         <h3>✅ Data Berhasil Disimpan!</h3>
         <p>Mengalihkan ke halaman rekomendasi...</p>
     </div>
 
+
 <script>
-// --- URL API BARU ---
-const API_INPUT_URL = "http://127.0.0.1:8000/api/input/store";
+
+// --- URL API ---
+const API_INPUT_URL = "https://plantadvisor.cloud/api/input/store";
+const API_PROFILE_URL = "https://plantadvisor.cloud/api/profile"; // URL PROFILE BARU (Asumsi)
 // --- END URL API ---
+
 
 // =========================================================================
 // === DEKLARASI DAN KONFIGURASI ===
+
 
 const phInput = document.getElementById("phInput");
 const suhuInput = document.getElementById("suhuInput");
@@ -185,14 +288,25 @@ const kecamatanInput = document.getElementById("kecamatanInput");
 const tanamanSebelumnyaSelect = document.getElementById("tanamanSebelumnya");
 const submitBtn = document.getElementById("submitBtn");
 const logoutBtn = document.getElementById("logoutBtn");
-const loginBtn = document.getElementById("loginBtn"); 
+const loginBtn = document.getElementById("loginBtn");
 
 const phError = document.getElementById("phError");
-const suhuError = document.getElementById("suhuError"); 
+const suhuError = document.getElementById("suhuError");
 const kelembapanError = document.getElementById("kelembapanError");
-const resultKecamatan = document.getElementById("result"); 
-const successModal = document.getElementById("successModal"); 
-const token = localStorage.getItem("token"); 
+const resultKecamatan = document.getElementById("result");
+const successModal = document.getElementById("successModal");
+const token = localStorage.getItem("token");
+
+// Tambahan Deklarasi untuk Profil
+const usernameDisplay = document.getElementById("usernameDisplay");
+const username = localStorage.getItem("username"); 
+const profilePopup = document.getElementById("profilePopup");
+const popupUsername = document.getElementById("popupUsername");
+const popupEmail = document.getElementById("popupEmail");
+const popupLoading = document.getElementById("popupLoading");
+
+let userEmail = null;
+let profileFetched = false; // Status untuk mencegah pengambilan data berulang
 
 const kecamatanMalangRaya = [
     "Ampelgading","Bantur","Bululawang","Dampit","Dau","Donomulyo",
@@ -204,13 +318,16 @@ const kecamatanMalangRaya = [
     "Batu","Bumiaji","Junrejo"
 ];
 
+
 let isKecamatanValid = false;
 let isPhValid = false;
 let isKelembapanValid = false;
 let isSuhuValid = false;
 
+
 // =========================================================================
 // === FUNGSI LOGIKA (VALIDASI, UTILITY, DLL) ===
+
 
 function showNotification(message, isSuccess = true) {
     const popup = document.getElementById("successModal");
@@ -220,13 +337,13 @@ function showNotification(message, isSuccess = true) {
     if (!isSuccess) {
         h3.textContent = "❌ Proses Gagal!";
         p.textContent = message;
-        popup.style.background = '#ffebeb'; 
+        popup.style.background = '#ffebeb';
         popup.style.border = '1px solid #dc3545';
         h3.style.color = '#dc3545';
     } else {
         h3.textContent = "✅ Data Berhasil Disimpan!";
         p.textContent = message;
-        popup.style.background = '#f0fff0'; 
+        popup.style.background = '#f0fff0';
         popup.style.border = '1px solid #28a745';
         h3.style.color = '#28a745';
     }
@@ -239,11 +356,11 @@ function checkFormValidity() {
     if (allValid) {
         submitBtn.classList.add("enabled");
         submitBtn.classList.remove("disabled");
-        submitBtn.href = "#"; 
+        submitBtn.href = "#";
     } else {
         submitBtn.classList.remove("enabled");
         submitBtn.classList.add("disabled");
-        submitBtn.href = "hasil.html"; 
+        submitBtn.href = "hasil.html";
     }
     return allValid;
 }
@@ -252,7 +369,7 @@ submitBtn.classList.add("disabled");
 
 function restrictInput(inputField) {
     inputField.addEventListener("input", function () {
-        this.value = this.value.replace(/[^0-9.]/g, ""); 
+        this.value = this.value.replace(/[^0-9.]/g, "");
         let parts = this.value.split(".");
         if (parts.length > 2) this.value = parts[0] + "." + parts.slice(1).join("");
     });
@@ -357,7 +474,7 @@ function validateKecamatan() {
             isKecamatanValid = true;
         } else {
             // PESAN TIDAK DITEMUKAN MUNCUL DI SINI
-            resultKecamatan.textContent = "✗ Kecamatan tidak ditemukan"; 
+            resultKecamatan.textContent = "✗ Kecamatan tidak ditemukan";
             resultKecamatan.style.color = "var(--color-danger)";
             kecamatanInput.classList.add("input-invalid");
             isKecamatanValid = false;
@@ -365,6 +482,7 @@ function validateKecamatan() {
     }
     checkFormValidity();
 }
+
 
 // =========================================================================
 // === LOGIKA CAROUSEL INTERAKTIF (FOKUS SISI KIRI - TANPA LOOP) ===
@@ -376,7 +494,7 @@ const totalItems = videoItems.length;
 // Ambil tombol panah dan pesan akhir (Diperlukan untuk JS)
 const leftBtn = document.querySelector('.scroll-btn.left');
 const rightBtn = document.querySelector('.scroll-btn.right');
-const endMessage = document.querySelector('.end-message'); // TAMBAHAN: Ambil elemen pesan
+const endMessage = document.querySelector('.end-message'); 
 
 
 // --- FUNGSI UPDATE FOKUS/ACTIVE ---
@@ -449,7 +567,7 @@ function scrollVideos(direction) {
 }
 
 
-// === EVENT LISTENERS ===
+// === EVENT LISTENERS CAROUSEL ===
 
 // 1. Deteksi scroll manual/touch
 videoCarousel.addEventListener('scroll', updateActiveVideo);
@@ -469,27 +587,121 @@ window.addEventListener('load', () => {
     updateActiveVideo(); 
 });
 
-// =========================================================================
-// === LOGIKA TAMPILAN, LOGOUT & GEOLOCATION ===
 
-/* === LOGIKA TAMPILAN LOGIN/LOGOUT === */
+// =========================================================================
+// === LOGIKA PENGAMBILAN PROFIL DARI API ===
+
+async function fetchUserProfile(token) {
+    if (profileFetched) return; // Jika sudah diambil, keluar
+
+    // Tampilkan loading state di popup
+    popupLoading.classList.remove('hidden-btn'); 
+    popupUsername.textContent = username || "User";
+    popupEmail.textContent = "Mengambil...";
+
+    try {
+        const res = await fetch(API_PROFILE_URL, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await res.json();
+
+        if (res.status !== 200) {
+            throw new Error(data.message || "Gagal mengambil data profil.");
+        }
+
+        userEmail = data.email || "Email tidak ditemukan"; // Ambil email dari respons API
+        profileFetched = true;
+        
+        // Perbarui tampilan popup dengan data yang sebenarnya
+        popupUsername.textContent = username || "User";
+        popupEmail.textContent = userEmail;
+        popupLoading.classList.add('hidden-btn'); // Sembunyikan loading
+
+    } catch (error) {
+        console.error("Error mengambil profil:", error);
+        popupUsername.textContent = username || "User";
+        popupEmail.textContent = "Gagal memuat email.";
+        popupLoading.classList.add('hidden-btn');
+    }
+}
+
+
+// =========================================================================
+// === LOGIKA TAMPILAN HEADER, LOGOUT & GEOLOCATION ===
+
+/* === LOGIKA TAMPILAN LOGIN/LOGOUT dan POPUP TOGGLE === */
 if (token) {
+    // Tampilkan tombol Logout dan Username
     if (logoutBtn) logoutBtn.classList.remove('hidden-btn');
     if (loginBtn) loginBtn.classList.add('hidden-btn');
+
+    let displayUsername = username || "User";
+    if (usernameDisplay) {
+        usernameDisplay.textContent = "Hi, " + displayUsername;
+        usernameDisplay.classList.remove('hidden-btn');
+    }
+
+    // Logika Popup Toggle
+    if (usernameDisplay && profilePopup) {
+        
+        // Event listener untuk toggle popup
+        usernameDisplay.addEventListener('click', function(e) {
+            e.stopPropagation(); // Mencegah event bubble ke document
+            
+            // Panggil API saat pertama kali diklik
+            if (!profileFetched) {
+                fetchUserProfile(token);
+            } else {
+                // Jika sudah diambil, pastikan data yang terakhir berhasil diambil ditampilkan
+                popupUsername.textContent = displayUsername;
+                popupEmail.textContent = userEmail;
+            }
+
+            profilePopup.classList.toggle('show');
+        });
+
+        // Menutup popup saat klik di luar area popup
+        document.addEventListener('click', function(e) {
+            if (profilePopup.classList.contains('show') && !usernameDisplay.contains(e.target) && !profilePopup.contains(e.target)) {
+                profilePopup.classList.remove('show');
+            }
+        });
+
+        // Mencegah popup tertutup saat klik di dalamnya
+        profilePopup.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+
 } else {
+    // Tidak ada token (belum login)
     if (logoutBtn) logoutBtn.classList.add('hidden-btn');
     if (loginBtn) loginBtn.classList.remove('hidden-btn');
+    if (usernameDisplay) usernameDisplay.classList.add('hidden-btn'); 
 }
+
 
 if (logoutBtn) {
     logoutBtn.addEventListener('click', function(e) {
         e.preventDefault();
+        // Hapus semua data
         localStorage.removeItem("token");
         localStorage.removeItem("user_id");
-        localStorage.removeItem('last_input_id'); 
-        window.location.href = window.location.href.split('#')[0]; 
+        localStorage.removeItem('last_input_id');
+        localStorage.removeItem("username");
+        // Reset status cache email/profil
+        userEmail = null;
+        profileFetched = false; 
+
+        window.location.href = window.location.href.split('#')[0];
     });
 }
+
 
 /* === GEOLOCATION (Hanya dijalankan jika ada token) === */
 if (token) {
@@ -535,7 +747,7 @@ if (token) {
 phInput.addEventListener("input", validatePh);
 kelembapanInput.addEventListener("input", validateKelembapan);
 suhuInput.addEventListener("input", validateSuhu);
-// INI ADALAH LISTENER UTAMA YANG MENYEBABKAN PESAN "TIDAK DITEMUKAN" MUNCUL REAL-TIME
+// INI ADALah LISTENER UTAMA YANG MENYEBABKAN PESAN "TIDAK DITEMUKAN" MUNCUL REAL-TIME
 kecamatanInput.addEventListener("input", validateKecamatan); 
 
 
