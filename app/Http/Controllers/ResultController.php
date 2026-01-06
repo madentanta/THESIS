@@ -10,20 +10,29 @@ class ResultController extends Controller
 {
     /**
      * Ambil semua rekomendasi tanaman berdasarkan input_id
+     * FE hanya menerima nama_tanaman & care_instructions hardcode
+     * DB tetap menyimpan semua AI response (score & keterangan)
      */
     public function getRecommendation($input_id)
     {
-        // 1. Cek apakah rekomendasi sudah ada
+ // Hardcode care instructions untuk FE (lebih lengkap)
+$careManual = [
+    "Tebu" => "1. Siram tiap 3 hari.\n2. Pupuk NPK tiap 2 minggu.\n3. Pastikan tanah gembur dan subur.\n4. Jaga jarak tanam 1.2 m antar tanaman.\n5. Panen setelah 10-12 bulan.",
+    "Jagung" => "1. Siram tiap 2 hari, terutama saat musim kemarau.\n2. Pupuk urea atau NPK tiap 1 minggu.\n3. Tanam di tanah yang kaya organik.\n4. Pastikan mendapat sinar matahari penuh.\n5. Jaga jarak tanam 25-30 cm per tanaman.\n6. Panen setelah 3-4 bulan.",
+    "Padi" => "1. Sirami rutin, jaga air tetap tergenang 5-10 cm.\n2. Pupuk NPK dan pupuk organik sesuai dosis.\n3. Kontrol hama seperti wereng dan penggerek batang.\n4. Pastikan padi mendapat sinar matahari cukup.\n5. Panen setelah 4-5 bulan."
+];
+
+        // 1. Cek apakah rekomendasi sudah ada di DB
         $existing = DB::table('crop_recommendation')
             ->where('input_id', $input_id)
             ->get();
 
         if ($existing->isNotEmpty()) {
-            // Hanya ambil nama tanaman dan care_instructions untuk response
-            $recommendations = $existing->map(function($item) {
+            // Hanya ambil nama tanaman & care_instructions hardcode untuk response
+            $recommendations = $existing->map(function($item) use ($careManual) {
                 return [
                     "nama_tanaman" => $item->recommended_crop,
-                    "care_instructions" => $item->care_instructions
+                    "care_instructions" => $careManual[$item->recommended_crop] ?? null
                 ];
             });
 
@@ -35,9 +44,7 @@ class ResultController extends Controller
         }
 
         // 2. Ambil input data
-        $inputData = DB::table('input')
-            ->where('input_id', $input_id)
-            ->first();
+        $inputData = DB::table('input')->where('input_id', $input_id)->first();
 
         if (!$inputData) {
             return response()->json([
@@ -53,10 +60,10 @@ class ResultController extends Controller
                 ->post("https://plantadvisor.cloud/inference", [
                     "input_data" => [
                         [
-                            "soil_ph"       => floatval($inputData->soil_ph),
-                            "temperature"   => floatval($inputData->temperature),
-                            "humidity"      => floatval($inputData->humidity),
-                            "location"      => $inputData->location,
+                            "soil_ph" => floatval($inputData->soil_ph),
+                            "temperature" => floatval($inputData->temperature),
+                            "humidity" => floatval($inputData->humidity),
+                            "location" => $inputData->location,
                             "previous_crop" => $inputData->previous_crop
                         ]
                     ],
@@ -70,14 +77,14 @@ class ResultController extends Controller
 
             $resultAI = $aiResponse->json();
 
-            // 4. Ambil SEMUA prediksi
+            // 4. Ambil semua prediksi
             $predictions = $resultAI['predictions'][0] ?? [];
 
             if (empty($predictions)) {
                 throw new \Exception("Tidak ada rekomendasi dari AI");
             }
 
-            // 5. Simpan SEMUA ke DB (termasuk score/kecocokan)
+            // 5. Simpan semua ke DB (termasuk score & keterangan)
             $now = Carbon::now();
             $insertData = [];
 
@@ -85,8 +92,8 @@ class ResultController extends Controller
                 $insertData[] = [
                     "input_id" => $input_id,
                     "recommended_crop" => $pred['nama_tanaman'],
-                    "care_instructions" => $pred['keterangan'] ?? null,
-                    "score" => $pred['kecocokan'] ?? null, // tetap disimpan di DB
+                    "care_instructions" => $pred['keterangan'] ?? null, // simpan AI keterangan
+                    "score" => $pred['kecocokan'] ?? null,
                     "created_at" => $now,
                     "updated_at" => $now
                 ];
@@ -98,11 +105,11 @@ class ResultController extends Controller
                 ->where('input_id', $input_id)
                 ->get();
 
-            // Hanya ambil nama tanaman & care_instructions untuk response
-            $recommendations = $saved->map(function($item) {
+            // Response FE hanya nama_tanaman & hardcode care_instructions
+            $recommendations = $saved->map(function($item) use ($careManual) {
                 return [
                     "nama_tanaman" => $item->recommended_crop,
-                    "care_instructions" => $item->care_instructions
+                    "care_instructions" => $careManual[$item->recommended_crop] ?? null
                 ];
             });
 
@@ -113,7 +120,7 @@ class ResultController extends Controller
             ], 500);
         }
 
-        // 6. Return semua rekomendasi tanpa score/kecocokan
+        // 6. Return semua rekomendasi ke FE tanpa score
         return response()->json([
             "success" => true,
             "input_id" => $input_id,
