@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: plantadvisor_app
+    volumes:
+      - .:/var/www/app
+    env_file:
+      - .env
+    networks:
+      - plantadvisor
+
+  web:
+    image: nginx:alpine
+    container_name: plantadvisor_nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/app
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - plantadvisor
+
+networks:
+  plantadvisor:

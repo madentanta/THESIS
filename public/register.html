@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Advisor - Register</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* --- CSS BASE --- */
+        body.reg-body {
+            margin: 0; padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('login.jpeg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+        }
+
+        .reg-card {
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px; border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            width: 100%; max-width: 450px; color: white;
+        }
+
+        .brand { color: #28a745; font-weight: 800; font-size: 30px; text-align: center; margin-bottom: 5px; }
+        .reg-title { text-align: center; font-size: 24px; margin-bottom: 20px; font-weight: 600; }
+
+        label { display: block; margin-bottom: 8px; font-size: 14px; color: #e0e0e0; }
+        input {
+            width: 100%; padding: 12px; margin-bottom: 4px;
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px; color: white; outline: none; box-sizing: border-box;
+        }
+
+        .reg-row { display: flex; gap: 15px; }
+        .reg-col { flex: 1; }
+
+        .reg-btn {
+            width: 100%; padding: 14px; background: #28a745; color: white;
+            border: none; border-radius: 8px; font-weight: 800; cursor: pointer;
+            transition: 0.3s; margin-top: 10px;
+        }
+        .reg-btn:hover { background: #218838; transform: translateY(-2px); }
+        .reg-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .reg-login-link { text-align: center; font-size: 14px; margin-top: 15px; }
+        .reg-login-link a { color: #28a745; text-decoration: none; font-weight: 800; }
+
+        /* Validasi & Error */
+        .input-invalid { border: 2px solid #dc3545 !important; }
+        .input-valid { border: 2px solid #28a745 !important; }
+        .error-msg { color: #ff6b6b; font-size: 11px; min-height: 15px; margin-bottom: 10px; }
+
+        /* --- STYLES POPUP MINIMALIS --- */
+        .popup-fixed {
+            position: fixed; top: 20px; right: -400px;
+            width: 260px; z-index: 9999; border-radius: 10px;
+            padding: 15px 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            font-family: 'Inter', sans-serif; transition: all 0.4s ease;
+            display: none;
+        }
+
+        /* Berhasil: Putih & Hijau */
+        .popup-success { background: #ffffff; border-left: 5px solid #28a745; }
+        .popup-success h3 { color: #28a745; margin: 0; font-size: 15px; font-weight: 800; }
+        .popup-success p { color: #555; margin: 5px 0 0; font-size: 12px; line-height: 1.4; }
+
+        .popup-error { background: #fff0f0; border-left: 5px solid #dc3545; }
+        .popup-error h3 { color: #dc3545; margin: 0; font-size: 15px; }
+        .popup-error p { color: #555; margin: 5px 0 0; font-size: 12px; }
+
+        .popup-info { background: #f0f8ff; border-left: 5px solid #17a2b8; }
+        .popup-info h3 { color: #17a2b8; margin: 0; font-size: 15px; }
+
+        @keyframes slideInFromRight {
+            from { right: -400px; opacity: 0; }
+            to { right: 20px; opacity: 1; }
+        }
+    </style>
+</head>
+
+<body class="reg-body">
+
+<div class="reg-card">
+    <div class="reg-header">
+        <h1 class="brand">Plant Advisor</h1>
+    </div>
+    <h1 class="reg-title">Register</h1>
+
+    <form id="registrationForm">
+        <label for="fullname">Nama Lengkap</label>
+        <input id="fullname" type="text" placeholder="Masukan Nama Lengkap" required>
+        <p id="fullnameError" class="error-msg"></p> 
+
+        <div class="reg-row">
+            <div class="reg-col">
+                <label for="username">Username</label>
+                <input id="username" type="text" placeholder="Masukan Username" required>
+                <p id="usernameError" class="error-msg"></p> 
+            </div>
+            <div class="reg-col">
+                <label for="email">Email</label>
+                <input id="email" type="email" placeholder="Masukan Email" required>
+                <p id="emailError" class="error-msg"></p> 
+            </div>
+        </div>
+
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="Masukan Password" required>
+        <p id="passError" class="error-msg"></p> 
+
+        <p class="reg-login-link">Sudah Punya Akun? <a href="login.html">Login</a></p>
+
+        <button type="submit" class="reg-btn" id="regBtn">Register</button>
+    </form>
+</div>
+
+<div class="popup-fixed popup-success" id="successPopup">
+    <h3>Pendaftaran Berhasil!</h3>
+    <p id="popupMessage">Cek email Anda untuk verifikasi.</p>
+    <p style="font-size: 10px; color: #888;">Redirecting in <span id="countdown">4</span>s...</p>
+</div>
+
+<div class="popup-fixed popup-info" id="processingPopup">
+    <h3>Pendaftaran Anda Sedang Diproses!</h3>
+    <p>Mohon tunggu sebentar ya, kami sedang menyiapkan akun Anda.</p>
+</div>
+
+<div class="popup-fixed popup-error" id="errorPopup">
+    <h3>Gagal Memproses ❌</h3>
+    <p id="errorPopupMessage">Terjadi kesalahan server/koneksi.</p>
+</div>
+
+
+<script>
+    const API_REGISTER_URL = "https://plantadvisor.cloud/api/register"; 
+
+    const successPopup = document.getElementById('successPopup');
+    const processingPopup = document.getElementById('processingPopup');
+    const errorPopup = document.getElementById('errorPopup');
+    const errorPopupMessage = document.getElementById('errorPopupMessage');
+    const countdownEl = document.getElementById('countdown');
+    const regBtn = document.getElementById('regBtn');
+
+    function cleanInputStyles() {
+        ['fullname', 'username', 'email', 'password'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) input.classList.remove("input-valid", "input-invalid");
+            const errorEl = document.getElementById(id + "Error");
+            if (errorEl) errorEl.textContent = "";
+        });
+    }
+
+    function togglePopup(popupEl, show, title = '', message = '') {
+        // Sembunyikan semua dulu
+        [successPopup, processingPopup, errorPopup].forEach(p => p.style.display = 'none');
+        
+        if (show) {
+            if (title) popupEl.querySelector('h3').textContent = title;
+            if (message) {
+                const pTag = popupEl.id === 'errorPopup' ? errorPopupMessage : popupEl.querySelector('p');
+                pTag.textContent = message;
+            }
+            popupEl.style.display = 'block';
+            popupEl.style.animation = 'slideInFromRight 0.4s ease-out forwards';
+        }
+    }
+
+    document.getElementById("registrationForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        cleanInputStyles(); 
+
+        const password = document.getElementById("password").value;
+        let validationPassed = true;
+
+        // Validasi Password Sederhana
+        if (password.length < 5 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+            validationPassed = false;
+            document.getElementById("passError").textContent = "Password min 5 karakter, kombinasi huruf, simbol, & angka.";
+            document.getElementById("password").classList.add("input-invalid");
+        } 
+
+        if (validationPassed) {
+            const data = {
+                fullname: document.getElementById("fullname").value,
+                username: document.getElementById("username").value,
+                email: document.getElementById("email").value,
+                password: password
+            };
+
+            regBtn.textContent = "Processing...";
+            regBtn.disabled = true;
+            togglePopup(processingPopup, true); 
+
+            try {
+                const response = await fetch(API_REGISTER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                togglePopup(processingPopup, false); 
+                regBtn.textContent = "Register";
+                regBtn.disabled = false;
+
+                if (response.ok) {
+                    togglePopup(successPopup, true, "Berhasil!", "Silakan cek email Anda untuk verifikasi.");
+                    let count = 4;
+                    const interval = setInterval(() => {
+                        count--;
+                        countdownEl.textContent = count;
+                        if (count <= 0) {
+                            clearInterval(interval);
+                            window.location.href = "login.html"; 
+                        }
+                    }, 1000);
+                } else {
+                    if (response.status === 422 && result.errors) {
+                        Object.keys(result.errors).forEach(field => {
+                            const errEl = document.getElementById(field + "Error");
+                            if (errEl) {
+                                errEl.textContent = result.errors[field][0];
+                                document.getElementById(field).classList.add("input-invalid");
+                            }
+                        });
+                    } else {
+                        togglePopup(errorPopup, true, "Gagal", result.message || "Terjadi kesalahan.");
+                    }
+                }
+            } catch (error) {
+                regBtn.textContent = "Register";
+                regBtn.disabled = false;
+                togglePopup(processingPopup, false); 
+                togglePopup(errorPopup, true, "Koneksi Gagal", "Server tidak merespon.");
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

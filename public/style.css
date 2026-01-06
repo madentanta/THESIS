@@ -1,0 +1,1265 @@
+/* =========================================================
+   1. VARIABLES & BASE STYLES
+   ========================================================= */
+:root {
+    /* Colors */
+    --color-primary: #c1d72e;        /* Hijau Muda/CTA */
+    --color-secondary: #1f2a44;      /* Biru Tua/Tutorial */
+    --color-dark: #1f2937;           /* Teks Utama */
+    --color-footer: #0f1e4d;         /* Footer Gelap */
+    --color-success: #2e7d32;        /* Validasi Berhasil */
+    --color-danger: #d9534f;         /* Validasi Gagal/Error */
+    --color-background-light: #ffffff;
+    --color-text-faded: #4b5563;
+
+    /* Spacing */
+    --padding-sm: 1rem;
+    --padding-md: 2rem;
+    --padding-lg: 4rem;
+    --max-width-content: 1100px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--color-background-light);
+    color: var(--color-dark);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+h1, h2, h3 {
+    color: var(--color-secondary);
+    line-height: 1.2;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+/* =========================================================
+   2. UTILITIES & BUTTONS
+   ========================================================= */
+.logo {
+    font-weight: 800;
+    font-size: 1.2rem;
+}
+
+.btn {
+    padding: 0.7rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-dark);
+}
+
+.btn-outline {
+    border: 1px solid var(--color-dark);
+    color: var(--color-dark);
+    background: transparent;
+}
+
+.btn-logout {
+    color: var(--color-dark);
+    padding: 0.7rem 0.5rem; /* Lebih ringkas */
+}
+
+/* Hover effects */
+.main-nav a:hover,
+.btn-logout:hover {
+    color: var(--color-primary);
+}
+
+.btn-primary:hover {
+    background-color: #a4b924;
+}
+
+.btn-outline:hover {
+    background-color: var(--color-dark);
+    color: white;
+}
+
+/* =========================================================
+   3. HEADER (Mobile Default)
+   ========================================================= */
+.main-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem var(--padding-sm);
+    border-bottom: 1px solid #eee;
+}
+
+.main-nav {
+    order: 3; /* Pindah ke bawah */
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.main-nav a {
+    display: block; /* Vertikal di mobile */
+    margin: 0.4rem 0;
+    padding: 0.5rem 0;
+}
+
+.header-buttons {
+    display: flex;
+    order: 2;
+    gap: 0.5rem;
+}
+
+/* =========================================================
+   4. HERO SECTION (Mobile Default)
+   ========================================================= */
+.hero {
+    display: flex;
+    flex-direction: column;
+    padding: var(--padding-md) var(--padding-sm);
+    gap: 2rem;
+    text-align: center;
+}
+
+.hero-text {
+    order: 2;
+}
+
+.hero-text h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.hero-text p {
+    color: var(--color-text-faded);
+}
+
+.hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.hero-img {
+    order: 1;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+.hero-img img {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+}
+
+/* =========================================================
+   5. TUTORIAL SECTION (Mobile Default)
+   ========================================================= */
+.tutorial-section {
+    background-color: var(--color-secondary);
+    color: white;
+    padding: var(--padding-md) var(--padding-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    text-align: center;
+}
+
+.video-thumb {
+    width: 100%;
+    max-width: 350px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.video-thumb img {
+    width: 100%;
+    display: block;
+}
+
+.video-text h2 {
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.tutorial-link {
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.tutorial-link:hover {
+    color: var(--color-primary);
+}
+
+
+/* =========================================================
+   6. FORM SECTION (AII)
+   ========================================================= */
+.form-section {
+    padding: var(--padding-md) var(--padding-sm);
+}
+
+.form-section h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-weight: 800;
+    font-size: 1.5rem;
+}
+
+.data-form {
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+    padding: 20px;
+    background: var(--color-background-light);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.data-form label {
+    font-weight: 600;
+    margin-top: 10px;
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+
+.data-form input,
+.data-form select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    min-height: 44px; /* Touch target size */
+    transition: border-color 0.3s ease;
+}
+
+/* Input validation feedback */
+.data-form .input-valid {
+    border: 2px solid var(--color-success);
+}
+
+.data-form .input-invalid {
+    border: 2px solid var(--color-danger);
+}
+
+.validation-msg {
+    font-size: 0.9rem;
+    margin-top: 3px;
+    margin-bottom: 5px;
+    line-height: 1.1;
+    font-weight: 600;
+}
+
+.error-msg {
+    color: var(--color-danger);
+    font-size: 0.8rem;
+    margin: 0;
+    padding: 0;
+}
+
+.submit-container {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.btn-submit {
+    background-color: #b2d235;
+    color: white;
+    padding: 14px 24px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.btn-submit:hover {
+    background-color: #9cbb2f;
+    transform: translateY(-2px);
+}
+
+/* =========================================================
+   7. FOOTER
+   ========================================================= */
+footer {
+    background-color: var(--color-footer);
+    color: white;
+    padding: var(--padding-md) var(--padding-sm);
+    margin-top: var(--padding-lg);
+    text-align: center;
+}
+
+.footer-container {
+    max-width: var(--max-width-content);
+    margin: 0 auto;
+}
+
+.footer-title {
+    color: white;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+}
+
+.footer-desc {
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.footer-bottom {
+    font-size: 0.8rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    opacity: 0.7;
+}
+
+/* =========================================================
+   8. MEDIA QUERIES (Desktop/Large Screens)
+   ========================================================= */
+@media (min-width: 769px) {
+    /* Header */
+    .main-header {
+        padding: 1.5rem 3rem;
+        flex-wrap: nowrap;
+    }
+
+    .main-nav {
+        order: initial;
+        width: auto;
+        margin-top: 0;
+        text-align: left;
+    }
+
+    .main-nav a {
+        display: inline;
+        margin: 0 1rem;
+        padding: 0;
+    }
+
+    .header-buttons {
+        order: initial;
+    }
+    
+    /* Hero */
+    .hero {
+        flex-direction: row;
+        text-align: left;
+        padding: var(--padding-lg) 3rem;
+        gap: 4rem;
+        max-width: var(--max-width-content);
+        margin: 0 auto;
+    }
+
+    .hero-text {
+        order: 1;
+        flex: 1;
+    }
+
+    .hero-text h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero-img {
+        order: 2;
+        flex: 1;
+        text-align: right;
+    }
+
+    .hero-buttons {
+        justify-content: flex-start;
+    }
+
+    .hero-img img {
+        width: 350px;
+    }
+
+    /* Tutorial */
+    .tutorial-section {
+        flex-direction: row;
+        justify-content: center;
+        text-align: left;
+        padding: var(--padding-lg) 3rem;
+        gap: 4rem;
+    }
+}
+
+
+/* =========================================================
+   9. STYLES UNTUK HASIL, LOGIN, REGISTER (Disesuaikan)
+   ========================================================= */
+
+/* --- LOGIN / REGISTER --- */
+/* =========================================================
+   LOGIN & REGISTER STYLES
+   ========================================================= */
+/* Asumsi: var(--color-primary) = #c1d72e (atau #b2d235), var(--color-dark), var(--padding-sm) sudah didefinisikan di :root */
+
+/* --- Container Halaman (Mobile Default) --- */
+.login-page {
+    background-image: url('login.jpeg'); /* Ini yang benar */
+}
+.login-page, .reg-overlay {
+    background-size: cover;
+    background-position: center center;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    
+    /* Fokus Utama: Mobile-First, geser kartu ke atas (10vh) untuk keyboard */
+    align-items: flex-start; 
+    padding: var(--padding-sm);
+    padding-top: 10vh; 
+}
+.forgot-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    /* --- PERUBAHAN DI SINI --- */
+    background-image: url('login.jpeg'); /* Menggunakan login.jpeg */
+    /* -------------------------- */
+    background-size: cover;
+    background-position: center;
+    padding: 20px;
+}
+/* --- Card Login/Register (Glass Effect) --- */
+.login-card, .reg-card {
+    width: 100%;
+    max-width: 380px;
+    padding: 30px;
+    
+    /* Glass Morphism */
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);
+    
+    border-radius: 20px;
+    color: #fff; /* Warna teks dasar di card */
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    transition: transform 0.3s ease;
+}
+
+/* Pastikan kedua kelas ini menargetkan elemen yang benar */
+.login-page, .reg-overlay {
+    background-image: url('login.jpeg'); /* <-- Ganti jalur ini jika gambar tidak di folder 'images' */
+    background-size: cover;
+    background-position: center center;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Untuk mobile-first */
+    padding-top: 10vh; 
+    /* ... properti lain yang relevan ... */
+}
+/* --- Judul di dalam Card --- */
+.login-title, .reg-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    color: white; 
+}
+
+/* --- Input Form --- */
+.login-form label, .reg-card label {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.login-form input, .reg-card input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    min-height: 44px; /* Kenyamanan sentuhan */
+    
+    /* Glass Input Style */
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.login-form input::placeholder, .reg-card input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.login-form input:focus, .reg-card input:focus {
+    border-color: var(--color-primary);
+    outline: none; 
+}
+
+
+/* --- Tombol Submit --- */
+.btn-login, .reg-btn {
+    width: 100%;
+    padding: 12px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    
+    /* Warna diambil dari Primary/CTA */
+    background-color: var(--color-primary, #b2d235);
+    color: var(--color-dark, #333); 
+    border: none;
+    border-radius: 8px;
+    
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.btn-login:hover, .reg-btn:hover {
+    background-color: #9cbb2f; /* Nilai sedikit gelap dari #b2d235 */
+}
+
+/* --- Register Row (Untuk Nama Depan & Belakang) --- */
+.reg-row {
+    display: flex;
+    flex-direction: column; /* Stacked Vertikal di Mobile */
+    gap: 0;
+}
+
+.reg-row .reg-col {
+    width: 100%;
+}
+
+
+/* =========================================================
+   MEDIA QUERIES (Desktop/Tablet)
+   ========================================================= */
+@media (min-width: 600px) {
+    /* Mengatur Card kembali ke tengah di Desktop/Tablet */
+    .login-page, .reg-overlay {
+        align-items: center; /* Kembali ke tengah vertikal */
+        padding-top: var(--padding-sm); 
+    }
+    
+    /* Register Row: Side-by-Side */
+    .reg-row {
+        flex-direction: row; 
+        gap: 15px; /* Jarak antar kolom */
+    }
+    
+    .reg-row .reg-col {
+        width: 50%; /* Membagi ruang */
+    }
+
+    .reg-row input {
+        margin-bottom: 0; /* Menghilangkan margin di bawah input agar sejajar */
+    }
+}
+
+/* --- HASIL --- */
+.container-kecocokan {
+    padding: var(--padding-md) var(--padding-sm);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.container-kecocokan h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    margin-top: 1rem;
+}
+
+.highlight-tanaman {
+    display: flex;
+    flex-direction: column; /* Stacked di mobile */
+    background: #efefef;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    gap: 15px;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.highlight-tanaman img {
+    width: 100%;
+    max-width: 250px;
+    border-radius: 8px;
+}
+
+.highlight-tanaman .desc {
+    text-align: left;
+}
+
+.tanaman-list {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.card {
+    width: 45%; /* 2 kolom di mobile */
+    max-width: 180px;
+    padding: 10px;
+}
+
+@media (min-width: 769px) {
+    .highlight-tanaman {
+        flex-direction: row; /* Side-by-side di desktop */
+        text-align: left;
+        align-items: flex-start;
+    }
+
+    .card {
+        width: 180px;
+    }
+}
+
+.reg-login-link {
+    font-size: 0.9rem; /* Ukuran standar 1rem. Ubah ke 0.9rem atau lebih kecil */
+    text-align: center; /* Tambahan, agar rapi */
+    margin-bottom: 20px; /* Tambahkan sedikit jarak di bawah */
+}
+
+/* Jika Anda ingin link-nya tetap tebal, bisa tambahkan ini: */
+.reg-login-link a {
+    font-weight: 600;
+}
+
+/* Styling untuk teks "Don't Have an Account? Register" */
+.register-text {
+    font-size: 0.9rem; /* Mengatur ukuran font, bisa diubah ke 0.8rem jika terlalu besar */
+    margin-top: 10px; /* Tambahkan sedikit jarak dari atas jika perlu */
+    margin-bottom: 5px; /* Tambahkan sedikit jarak dari bawah jika perlu */
+    text-align: center; /* Memastikan teks ada di tengah (jika di dalam header-center) */
+}
+
+.register-text a {
+    /* Opsional: Membuat link 'Register' tetap menonjol atau tebal */
+    font-weight: 600;
+    color: white; /* Karena berada di dalam card gelap */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.register-text a:hover {
+    color: var(--color-primary); /* Menggunakan warna tema saat hover */
+    text-decoration: underline;
+}
+
+/* =========================================================
+   REVISI KHUSUS: HALAMAN DETAIL TANAMAN (DETAIL.HTML)
+   ========================================================= */
+
+/* --- Container Utama --- */
+.container-detail {
+    padding: var(--padding-md, 2rem) var(--padding-sm, 1rem);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.page-title {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    color: var(--color-secondary, #1f2a44);
+}
+
+.back-link {
+    font-weight: 800;
+    margin-right: 10px;
+    color: var(--color-text-faded, #4b5563);
+    text-decoration: none;
+}
+
+/* --- Content Box Utama --- */
+.content-box {
+    background: var(--color-background-light);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.plant-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.plant-image {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    object-fit: cover;
+}
+
+.plant-header h3 {
+    font-size: 2rem;
+    color: var(--color-secondary);
+}
+
+.plant-description {
+    line-height: 1.8;
+    color: var(--color-text-faded);
+    margin-bottom: 30px;
+    border-bottom: 1px dashed #eee;
+    padding-bottom: 20px;
+}
+
+
+/* --- Langkah-Langkah Penanaman (Step-by-Step) --- */
+.section-title {
+    font-size: 1.5rem;
+    color: var(--color-dark);
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.step-by-step {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    border-left: 5px solid var(--color-primary); /* Garis warna sebagai penanda */
+}
+
+.step-number {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    background-color: var(--color-primary);
+    color: var(--color-dark);
+    border-radius: 50%;
+    font-weight: 800;
+    margin-right: 15px;
+    font-size: 1.1rem;
+}
+
+.step-content {
+    flex-grow: 1;
+}
+
+.step-content h5 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: var(--color-secondary);
+    font-size: 1.2rem;
+}
+
+.step-content ul {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 5px;
+}
+
+.step-content ul li {
+    font-size: 0.95rem;
+    color: var(--color-text-faded);
+    padding-left: 1.5em; /* Ruang untuk bullet point kustom */
+    position: relative;
+    margin-bottom: 5px;
+}
+
+.step-content ul li::before {
+    content: "🌱"; /* Emoji sebagai bullet point */
+    position: absolute;
+    left: 0;
+    color: var(--color-primary);
+    font-size: 0.8em;
+    top: 3px;
+}
+
+/* --- Footer Button --- */
+.action-buttons {
+    text-align: center;
+    margin-top: 30px;
+    padding-bottom: 20px;
+}
+
+.btn-large {
+    width: 100%;
+    max-width: 350px;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+}
+
+/* =========================================================
+   MEDIA QUERIES (Desktop/Tablet)
+   ========================================================= */
+@media (min-width: 768px) {
+    .container-detail {
+        padding: 3rem;
+    }
+
+    .plant-header {
+        display: flex;
+        align-items: center;
+        text-align: left;
+        margin-bottom: 30px;
+    }
+    
+    .plant-image {
+        width: 180px;
+        max-width: 180px;
+        margin: 0 30px 0 0;
+    }
+
+    .plant-header h3 {
+        font-size: 2.5rem;
+    }
+
+    .step {
+        /* Di desktop, buat langkah-langkah lebih menonjol */
+        padding: 20px;
+    }
+}
+
+/* Styling tombol Submit */
+.btn-submit {
+    background-color: #b5b5b5; /* Default: Abu-abu */
+    cursor: not-allowed;
+    pointer-events: none; /* Mencegah klik */
+}
+
+.btn-submit.enabled {
+    background-color: var(--color-primary) !important; /* Gunakan warna primary (#c1d72e) */
+    color: var(--color-dark);
+    cursor: pointer;
+    pointer-events: auto;
+}
+.btn-submit.enabled:hover {
+    background-color: #a4b924 !important; /* Warna hover yang lebih gelap */
+}
+
+/* Kelas disabled sudah Anda sertakan di bawah: */
+.btn-submit.disabled {
+    background-color: #b5b5b5 !important;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Catatan: Karena tombol di HTML Anda adalah <a>, kita tidak menggunakan properti disabled HTML, tetapi mengendalikan perilaku klik melalui JavaScript dan style. */
+
+/* =========================================================
+   10. MODAL (POPUP) STYLES
+   ========================================================= */
+
+.modal {
+    display: none; /* Tersembunyi secara default */
+    position: fixed;
+    z-index: 2000; /* Pastikan di atas semua elemen lain */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6); /* Latar belakang gelap */
+    padding-top: 50px;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto; /* 10% dari atas dan di tengah horizontal */
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    position: relative;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(-20px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+.modal-content h2 {
+    color: var(--color-success);
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+}
+
+.modal-content p {
+    margin-bottom: 25px;
+    color: var(--color-dark);
+}
+
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    cursor: pointer;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: var(--color-danger);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.modal-btn-continue {
+    background-color: var(--color-primary);
+    color: var(--color-dark);
+}
+
+.modal-btn-close {
+    border: 1px solid var(--color-text-faded);
+    color: var(--color-dark);
+    background: transparent;
+}
+
+/* =========================================================
+   10. POPUP NOTIFIKASI SUKSES (Gaya Login)
+   ========================================================= */
+
+.popup-success{
+    position:fixed;
+    top:20px;
+    right:20px;
+    width:200px; /* Lebar Dikecilkan */
+    height:auto;
+    background: #f0fff0; /* Warna hijau muda polos */
+    color:#333; 
+    display:none; /* Sembunyikan default */
+    z-index:9999;
+    border-radius:8px; /* Lebih kecil */
+    padding:10px 15px; /* Padding dikurangi */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Shadow lebih tipis */
+    border: 1px solid #28a745; /* Border tipis sesuai tema */
+    font-family: 'Inter', sans-serif; /* Sesuaikan font */
+    text-align: left; /* Teks rata kiri */
+    animation: slideInFromRight 0.4s ease-out; 
+}
+
+.popup-success h3{
+    margin-top:0;
+    margin-bottom:2px;
+    font-size:14px; /* Ukuran font judul dikecilkan */
+    color:#28a745; 
+    font-weight: 600; 
+}
+
+.popup-success p{
+    margin:0;
+    font-size:12px; /* Ukuran font paragraf dikecilkan */
+    color:#555; 
+}
+
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* =========================================================
+   12. TOOLTIP INPUT STYLES (Di bawah Input, Tanpa Mengubah Jarak Field)
+   ========================================================= */
+
+/* Wadah harus tetap relatif, tetapi HAPUS padding-bottom ekstra */
+.input-with-tooltip-wrapper {
+    position: relative;
+    display: block; 
+    /* Jarak vertikal sekarang ditentukan oleh elemen <p> validasi di bawahnya */
+}
+
+/* Gaya kotak keterangan (Tooltip) */
+.input-tooltip {
+    /* Sembunyikan dan atur transisi */
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+    
+    /* Gaya penampilan */
+    width: 100%; /* Tooltip akan mengambil lebar penuh input */
+    max-width: 300px; 
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    
+    /* POSISI BARU: Di bawah Input (absolute, tidak mengganggu layout) */
+    position: absolute;
+    z-index: 1000;
+    /* Posisikan di bawah input dan pastikan berada di atas p.validation-msg */
+    top: 100%; 
+    left: 50%;
+    /* Geser ke tengah, pastikan tidak ada translasi Y yang mendorong layout */
+    transform: translateX(-50%); 
+    margin-top: 5px; /* Jarak sedikit dari bawah input */
+    
+    pointer-events: none; 
+}
+
+/* Tampilkan Tooltip saat input di dalamnya di-hover */
+.input-with-tooltip-wrapper input:hover + .input-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%); /* Geser tetap di tengah */
+}
+
+/* Tambahkan segitiga penunjuk (Arrow) */
+.input-tooltip::before {
+    content: "";
+    position: absolute;
+    bottom: 100%; /* Di bagian atas kotak tooltip */
+    left: 50%;
+    margin-left: -5px; /* Pusatkan horizontal */
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent #555 transparent;
+}
+
+.video-container-link {
+    /* MENGAKTIFKAN TATA LETAK KANAN-KIRI */
+    display: flex; 
+    /* JANGAN SAMPAI ADA GARIS BAWAH */
+    text-decoration: none; 
+    color: inherit; /* Memastikan teks tidak berwarna biru */
+    /* Tambahan style lain yang Anda inginkan */
+    align-items: center; /* Untuk menyejajarkan vertikal di tengah */
+    gap: 30px; /* Jarak antara gambar dan teks */
+    padding: 20px; /* Jaga jarak dari tepi */
+}
+
+/* --- CSS Lain untuk Kerapian --- */
+.video-thumb img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px; 
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+/* Efek hover pada link */
+.video-container-link:hover .video-thumb img {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+/* =========================================================================
+   1. STRUKTUR UTAMA DAN JUDUL
+   ========================================================================= */
+
+.tutorial-section {
+    padding: 60px 0;
+    text-align: center; 
+    background-color: #1a233c; 
+    color: white;
+}
+.tutorial-section h2, .tutorial-section p {
+    color: white;
+}
+.carousel-title-container {
+    max-width: 800px;
+    margin: 0 auto 30px auto; 
+}
+
+/* =========================================================================
+   2. CAROUSEL DAN SCROLL SNAP (FIX PADDING KIRI)
+   ========================================================================= */
+
+/* Kontainer Utama Carousel (Memosisikan tombol panah) */
+.carousel-wrapper {
+    position: relative;
+    max-width: 1200px; 
+    margin: 0 auto;
+    padding: 0; 
+    width: 90%; 
+    overflow: visible; 
+}
+
+/* Kontainer Gulir Video */
+.video-carousel {
+    display: flex;
+    overflow-x: scroll; 
+    scroll-behavior: smooth; 
+    padding-bottom: 20px; 
+    
+    scroll-snap-type: x mandatory; 
+    
+    /* FIX: PADDING KIRI 20PX untuk sejajar di bawah tombol kiri. */
+    padding: 0 520px 20px 20px; 
+    
+    /* Menyembunyikan Scrollbar */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.video-carousel::-webkit-scrollbar {
+    display: none;
+}
+
+/* =========================================================================
+   3. ITEM VIDEO (EFEK TIMBUL/SAMAR)
+   ========================================================================= */
+
+.video-item {
+    min-width: 500px; 
+    width: 500px;
+    flex-shrink: 0; 
+    
+    margin: 0 10px; 
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #333;
+    
+    /* Scroll Snap: Mengunci item di SISI KIRI (start) */
+    scroll-snap-align: start; 
+
+    /* Awalnya sedikit buram dan kecil (efek samar) */
+    transition: transform 0.4s ease, box-shadow 0.4s ease, opacity 0.4s ease;
+    opacity: 0.7; 
+    transform: scale(0.95); 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* KELAS AKTIF: Diterapkan oleh JavaScript */
+.video-item.active {
+    transform: scale(1); 
+    opacity: 1; 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); 
+}
+
+.video-item iframe {
+    width: 100%;
+    height: 281px; 
+    display: block;
+}
+.video-caption {
+    padding: 10px;
+    font-weight: 600;
+    font-size: 0.9em;
+    color: #eee;
+}
+
+/* =========================================================================
+   4. TOMBOL GULIR (FIX POSISI FINAL)
+   ========================================================================= */
+
+.scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.2); 
+    color: white;
+    border: 2px solid white; 
+    padding: 10px 15px;
+    cursor: pointer;
+    z-index: 20; 
+    border-radius: 50%;
+    font-size: 20px;
+    line-height: 1; 
+    transition: background 0.3s;
+}
+.scroll-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+.scroll-btn.left {
+    /* Mendorong tombol keluar 20px (memberi space) */
+    left: -20px; 
+}
+.scroll-btn.right {
+    /* MENDORONG MASUK KE KIRI 40PX */
+    right: 40px; 
+}
+
+/* =========================================================================
+   6. PESAN AKHIR CAROUSEL (PESAN INFORMATIF - UNTUK LAYAR LEBAR)
+   ========================================================================= */
+
+.end-message {
+    position: absolute;
+    /* FIX: Digeser lebih jauh ke KIRI (120px) agar tidak bertabrakan dengan tombol */
+    right: 120px; 
+    top: 50%;
+    transform: translateY(-50%);
+    
+    z-index: 5; 
+    
+    width: 250px; 
+    text-align: center;
+    color: #b0b8c9; 
+    font-size: 1.2em;
+    font-weight: 500;
+    
+    /* DEFAULT KEADAAN TERSEMBUNYI, DIKONTROL OLEH JS */
+    opacity: 0; 
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+/* =========================================================================
+   5. MEDIA QUERIES (Responsif)
+   ========================================================================= */
+@media (max-width: 1000px) {
+    /* Sembunyikan pesan di layar kecil agar tidak mengganggu tata letak responsif */
+    .end-message {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .video-item {
+        min-width: 85vw;
+        width: 85vw; 
+        margin: 0 10px;
+    }
+    .video-item iframe {
+        height: calc(85vw / 16 * 9); 
+    }
+    .video-carousel {
+        /* Sesuaikan padding kiri agar blank space terlihat (40px) */
+        padding: 0 85vw 20px 40px; 
+    }
+    .scroll-btn.left {
+        /* Kembali ke 0 untuk layar kecil */
+        left: 0; 
+    }
+    .scroll-btn.right {
+        /* Kembali ke 0 untuk layar kecil */
+        right: 0;
+    }
+}
