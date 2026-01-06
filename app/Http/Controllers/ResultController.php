@@ -19,10 +19,18 @@ class ResultController extends Controller
             ->get();
 
         if ($existing->isNotEmpty()) {
+            // Hanya ambil nama tanaman dan care_instructions untuk response
+            $recommendations = $existing->map(function($item) {
+                return [
+                    "nama_tanaman" => $item->recommended_crop,
+                    "care_instructions" => $item->care_instructions
+                ];
+            });
+
             return response()->json([
                 "success" => true,
                 "input_id" => $input_id,
-                "recommendations" => $existing
+                "recommendations" => $recommendations
             ]);
         }
 
@@ -69,7 +77,7 @@ class ResultController extends Controller
                 throw new \Exception("Tidak ada rekomendasi dari AI");
             }
 
-            // 5. Simpan SEMUA ke DB
+            // 5. Simpan SEMUA ke DB (termasuk score/kecocokan)
             $now = Carbon::now();
             $insertData = [];
 
@@ -78,7 +86,7 @@ class ResultController extends Controller
                     "input_id" => $input_id,
                     "recommended_crop" => $pred['nama_tanaman'],
                     "care_instructions" => $pred['keterangan'] ?? null,
-                    "score" => $pred['kecocokan'] ?? null, // kalau ada kolom score
+                    "score" => $pred['kecocokan'] ?? null, // tetap disimpan di DB
                     "created_at" => $now,
                     "updated_at" => $now
                 ];
@@ -90,6 +98,14 @@ class ResultController extends Controller
                 ->where('input_id', $input_id)
                 ->get();
 
+            // Hanya ambil nama tanaman & care_instructions untuk response
+            $recommendations = $saved->map(function($item) {
+                return [
+                    "nama_tanaman" => $item->recommended_crop,
+                    "care_instructions" => $item->care_instructions
+                ];
+            });
+
         } catch (\Exception $e) {
             return response()->json([
                 "success" => false,
@@ -97,11 +113,11 @@ class ResultController extends Controller
             ], 500);
         }
 
-        // 6. Return semua rekomendasi
+        // 6. Return semua rekomendasi tanpa score/kecocokan
         return response()->json([
             "success" => true,
             "input_id" => $input_id,
-            "recommendations" => $saved
+            "recommendations" => $recommendations
         ]);
     }
 }

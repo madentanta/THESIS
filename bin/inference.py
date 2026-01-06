@@ -140,7 +140,7 @@ class HopularInference:
                 feature_columns: Optional[List[str]] = None,
                 return_probabilities: bool = False) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
         with torch.no_grad():
-            X_encoded, feature_names = self.preprocess_input(input_data, feature_columns)
+            X_encoded, feature_names = self.preprocess_input(input_data)
             X_tensor = torch.FloatTensor(X_encoded).to(self.device)
             output = self.model(X_tensor, memory_mask=None)
 
@@ -176,11 +176,11 @@ class HopularInference:
                 return [self._generate_recommendation(prob) for prob in probabilities]
 
     def _generate_recommendation(self, probabilities: np.ndarray) -> List[Dict]:
+        """Return all predictions without any threshold"""
         recommendations = []
         target_encoder = self.metadata.get('target_label_encoder')
         class_names = target_encoder.classes_ if target_encoder else ["Tebu", "Jagung", "Padi"]
 
-        # **Tidak ada batasan 0.5**
         for class_idx, prob in enumerate(probabilities):
             crop_name = class_names[class_idx]
             recommendations.append({
@@ -189,6 +189,7 @@ class HopularInference:
                 "keterangan": "Rekomendasi tanaman berdasarkan probabilitas model."
             })
 
+        # Urutkan dari probabilitas tertinggi
         recommendations.sort(key=lambda x: x["kecocokan"], reverse=True)
         return recommendations
 
