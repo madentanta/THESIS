@@ -9,67 +9,99 @@ use Carbon\Carbon;
 class ResultController extends Controller
 {
     /**
-     * Ambil rekomendasi tanaman berdasarkan input_id
-     * Jika belum ada, generate 1 rekomendasi dari AI service / logic
+     * Ambil semua rekomendasi tanaman berdasarkan input_id
      */
     public function getRecommendation($input_id)
     {
         // 1. Cek apakah rekomendasi sudah ada
-        $recommendation = DB::table('crop_recommendation')
-                            ->where('input_id', $input_id)
-                            ->first();
+        $existing = DB::table('crop_recommendation')
+            ->where('input_id', $input_id)
+            ->get();
 
-        if (!$recommendation) {
-            // Ambil input
-            $inputData = DB::table('input')->where('input_id', $input_id)->first();
-
-            if (!$inputData) {
-                return response()->json([
-                    "success" => false,
-                    "message" => "Input data tidak ditemukan."
-                ], 404);
-            }
-
-            try {
-                // send ke ai
-                $aiResponse = Http::post("http://ai-service:5000/predict", [
-                    "soil_ph"       => floatval($inputData->soil_ph),
-                    "temperature"   => floatval($inputData->temperature),
-                    "humidity"      => floatval($inputData->humidity),
-                    "location"      => $inputData->location,
-                    "previous_crop" => $inputData->previous_crop
-                ]);
-
-                if ($aiResponse->failed()) {
-                    throw new \Exception("AI Service error: " . $aiResponse->body());
-                }
-
-                $resultAI = $aiResponse->json();
-
-                $insertedId = DB::table('crop_recommendation')
-                    ->insertGetId([
-                        "input_id"          => $input_id,
-                        "recommended_crop"  => $resultAI['nama_tanaman'],
-                        "care_instructions" => $resultAI['care_instructions'] ?? null
-                    ], "recommendation_id");
-
-                $recommendation = DB::table('crop_recommendation')
-                                    ->where('recommendation_id', $insertedId)
-                                    ->first();
-
-            } catch (\Exception $e) {
-                return response()->json([
-                    "success" => false,
-                    "message" => "Gagal memproses rekomendasi: " . $e->getMessage()
-                ], 500);
-            }
+        if ($existing->isNotEmpty()) {
+            return response()->json([
+                "success" => true,
+                "input_id" => $input_id,
+                "recommendations" => $existing
+            ]);
         }
 
+        // 2. Ambil input data
+        $inputData = DB::table('input')
+            ->where('input_id', $input_id)
+            ->first();
+
+        if (!$inputData) {
+            return response()->json([
+                "success" => false,
+                "message" => "Input data tidak ditemukan."
+            ], 404);
+        }
+
+        try {
+            // 3. Call Hopular API
+            $aiResponse = Http::timeout(15)
+                ->retry(3, 1000)
+                ->post("https://plantadvisor.cloud/inference", [
+                    "input_data" => [
+                        [
+                            "soil_ph"       => floatval($inputData->soil_ph),
+                            "temperature"   => floatval($inputData->temperature),
+                            "humidity"      => floatval($inputData->humidity),
+                            "location"      => $inputData->location,
+                            "previous_crop" => $inputData->previous_crop
+                        ]
+                    ],
+                    "model_path" => "best_hopular_model.pt",
+                    "metadata_path" => "metadata.pkl"
+                ]);
+
+            if ($aiResponse->failed()) {
+                throw new \Exception("Hopular API error: " . $aiResponse->body());
+            }
+
+            $resultAI = $aiResponse->json();
+
+            // 4. Ambil SEMUA prediksi
+            $predictions = $resultAI['predictions'][0] ?? [];
+
+            if (empty($predictions)) {
+                throw new \Exception("Tidak ada rekomendasi dari AI");
+            }
+
+            // 5. Simpan SEMUA ke DB
+            $now = Carbon::now();
+            $insertData = [];
+
+            foreach ($predictions as $pred) {
+                $insertData[] = [
+                    "input_id" => $input_id,
+                    "recommended_crop" => $pred['nama_tanaman'],
+                    "care_instructions" => $pred['keterangan'] ?? null,
+                    "score" => $pred['kecocokan'] ?? null, // kalau ada kolom score
+                    "created_at" => $now,
+                    "updated_at" => $now
+                ];
+            }
+
+            DB::table('crop_recommendation')->insert($insertData);
+
+            $saved = DB::table('crop_recommendation')
+                ->where('input_id', $input_id)
+                ->get();
+
+        } catch (\Exception $e) {
+            return response()->json([
+                "success" => false,
+                "message" => "Gagal memproses rekomendasi: " . $e->getMessage()
+            ], 500);
+        }
+
+        // 6. Return semua rekomendasi
         return response()->json([
             "success" => true,
             "input_id" => $input_id,
-            "recommended_crop" => $recommendation->recommended_crop,
-            "care_instructions" => $recommendation->care_instructions
+            "recommendations" => $saved
         ]);
     }
 }
