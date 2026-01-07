@@ -37,7 +37,7 @@ services:
     ports:
       - "80:80"
       # Port 443 dimatikan dulu di lokal karena belum ada SSL
-      # - "443:443" 
+      - "443:443" 
     volumes:
       - .:/var/www/app
       # PAKAI default-local.conf agar tidak perlu file SSL .pem
