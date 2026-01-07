@@ -1,9 +1,11 @@
 <?php
-
+use App\Http\Controllers\ResultController;
 use Illuminate\Support\Facades\Route;
 
-// Mengarahkan root URL (/) langsung ke file beranda.html
 Route::get('/', function () {
-    // Redirect klien (browser) dari "/" ke "/beranda.html"
     return redirect('beranda.html');
 });
+
+// Route ini yang akan dipanggil oleh JavaScript di beranda.html
+// routes/web.php
+Route::get('/predict-ai/{input_id}', [ResultController::class, 'getRecommendation']);
