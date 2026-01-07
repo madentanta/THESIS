@@ -43,7 +43,7 @@ class AuthController extends Controller
 
         //  KIRIM EMAIL VERIFIKASI
         // 
-        $verificationLink = "https://plantadvisor.cloud/api/verify-email?token=" . urlencode($verificationToken);
+       $verificationLink = url("/api/verify-email?token=" . urlencode($verificationToken));
         
         $emailBody = 
             "Halo,\n\n" .
@@ -230,7 +230,7 @@ $nowLocal    = Carbon::now('Asia/Jakarta');
     {
         $req->validate(["token" => "required"]);
         
-        $loginUrl = 'https://plantadvisor.cloud/login.html'; // URL tujuan redirect (Frontend)
+        $loginUrl = url('/login.html');
 
         $user = DB::table("user")
                   ->where("verification_token", $req->token)
@@ -322,7 +322,7 @@ public function forgotPassword(Request $req)
     ]);
 
     // 4. Link reset (raw token, email tetap sama)
-    $resetLink = "https://plantadvisor.cloud/reset-password.html?token=" . urlencode($rawToken);
+    $resetLink = url("/reset-password.html?token=" . urlencode($rawToken));
 
     // 5. Email tetap sama persis
     $emailBody = 

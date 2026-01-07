@@ -58,7 +58,7 @@ class ResultController extends Controller
             // URL menggunakan nama service 'plantadvisor_ai' port 8001
             $aiResponse = Http::timeout(60) 
                 ->retry(2, 1000)
-                ->post("http://plantadvisor_ai:8001/inference", [
+                ->post("http://ai:8001/inference", [
                     "input_data" => [
                         [
                             "soil_ph" => floatval($inputData->soil_ph),
