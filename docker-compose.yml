@@ -20,7 +20,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.ai
-    container_name: plantadvisor_ai
+    container_name: plantadvisor_ai  # <--- Ini SINKRON dengan Http::post di Controller kamu
     restart: unless-stopped
     volumes:
       - .:/app
@@ -36,10 +36,12 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-      - "443:443"
+      # Port 443 dimatikan dulu di lokal karena belum ada SSL
+      # - "443:443" 
     volumes:
       - .:/var/www/app
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      # PAKAI default-local.conf agar tidak perlu file SSL .pem
+      - ./docker/nginx/default-local.conf:/etc/nginx/conf.d/default.conf
       - ./docker/nginx/certbot/www:/var/www/certbot
       - ./docker/nginx/certbot/conf:/etc/letsencrypt
     depends_on:
@@ -48,15 +50,13 @@ services:
     networks:
       - plantadvisor-net
 
-  # --- 4. SSL Certbot ---
+  # --- 4. SSL Certbot (Bisa dibiarkan atau dimatikan di lokal) ---
   certbot:
     image: certbot/certbot
     container_name: plantadvisor_certbot
     volumes:
       - ./docker/nginx/certbot/www:/var/www/certbot
       - ./docker/nginx/certbot/conf:/etc/letsencrypt
-    entrypoint: >
-      sh -c "trap exit TERM; while :; do sleep 12h & wait $${!}; certbot renew; done;"
     networks:
       - plantadvisor-net
 
