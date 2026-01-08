@@ -272,8 +272,8 @@
 <script>
 
 // --- URL API ---
-const API_INPUT_URL = "https://plantadvisor.cloud/api/input/store";
-const API_PROFILE_URL = "https://plantadvisor.cloud/api/profile"; // URL PROFILE BARU (Asumsi)
+const API_INPUT_URL = "/api/input/store";
+const API_PROFILE_URL = "/api/profile";
 // --- END URL API ---
 
 
@@ -788,7 +788,8 @@ submitBtn.addEventListener("click", async function (e) {
                 headers['Authorization'] = `Bearer ${token}`; 
             }
 
-const resInput = await fetch("https://plantadvisor.cloud/api/input/store", {
+// Ganti URL lengkap menjadi relative path
+const resInput = await fetch("/api/input/store", { 
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',
