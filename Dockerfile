@@ -1,22 +1,26 @@
 # Base image
 FROM php:8.2-fpm
 
-# Install dependencies sistem
+# Install system dependencies + PHP extensions
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
     libzip-dev \
     libpq-dev \
-    && docker-php-ext-install pdo pdo_mysql pdo_pgsql pgsql zip
+    libicu-dev \
+    && docker-php-ext-install \
+        pdo \
+        pdo_mysql \
+        pdo_pgsql \
+        pgsql \
+        zip \
+        intl
 
-# Set working directory sesuai docker-compose volumes
+# Set working directory
 WORKDIR /var/www/app
 
 # Copy project files
 COPY . .
-
-# Pastikan folder storage dan cache bisa ditulis
-RUN chown -R www-data:www-data /var/www/app/storage /var/www/app/bootstrap/cache
 
 # Install composer
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
@@ -26,7 +30,10 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Expose port PHP-FPM internal
+# Permission for Laravel
+RUN chown -R www-data:www-data /var/www/app/storage /var/www/app/bootstrap/cache
+
+# Expose port PHP-FPM
 EXPOSE 9000
 
 # Start PHP-FPM
