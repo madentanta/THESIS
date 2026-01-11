@@ -23,7 +23,7 @@ class ResultController extends Controller
             "Padi" => "1. Sirami rutin, jaga air tetap tergenang 5-10 cm.\n2. Pupuk NPK dan pupuk organik sesuai dosis.\n3. Kontrol hama seperti wereng dan penggerek batang.\n4. Pastikan padi mendapat sinar matahari cukup.\n5. Panen setelah 4-5 bulan."
         ];
 
-        // 2. Cek apakah rekomendasi sudah ada di DB untuk menghindari double hit ke AI
+        // 2. Cek apakah rekomendasi sudah ada di DB
         $existing = DB::table('crop_recommendation')
             ->where('input_id', $input_id)
             ->get();
@@ -54,8 +54,7 @@ class ResultController extends Controller
         }
 
         try {
-            // 4. Panggil Hopular API (FastAPI) via Internal Docker Network
-            // URL menggunakan nama service 'plantadvisor_ai' port 8001
+            // 4. Panggil AI (PARAMETER TETAP SESUAI ASLINYA)
             $aiResponse = Http::timeout(60) 
                 ->retry(2, 1000)
                 ->post("http://ai:8001/inference", [
@@ -77,9 +76,16 @@ class ResultController extends Controller
             }
 
             $resultAI = $aiResponse->json();
-            
-            // Berdasarkan api.py Anda, response ada di dalam ['predictions'][0]
-            $predictions = $resultAI['predictions'][0] ?? [];
+            $rawPredictions = $resultAI['predictions'][0] ?? [];
+
+            // FIX 1: Decode data jika berupa string JSON berantakan
+            if (is_string($rawPredictions)) {
+                $predictions = json_decode($rawPredictions, true);
+            } else {
+                $predictions = $rawPredictions;
+            }
+
+            // PENTING: Jangan tulis ulang $predictions di sini agar hasil decode tidak hilang
 
             if (empty($predictions)) {
                 throw new Exception("AI tidak memberikan hasil prediksi.");
@@ -91,17 +97,18 @@ class ResultController extends Controller
 
             foreach ($predictions as $pred) {
                 $insertData[] = [
-                    "input_id" => $input_id,
-                    "recommended_crop" => $pred['nama_tanaman'],
+                    "input_id"          => $input_id,
+                    "recommended_crop"  => $pred['nama_tanaman'] ?? 'Tanaman',
                     "care_instructions" => $pred['keterangan'] ?? null, 
-                    "score" => $pred['kecocokan'] ?? null,
-                    "recommended_at"=> $now
+                    "score"             => $pred['kecocokan'] ?? null,
+                    "recommended_at"    => $now
                 ];
             }
 
+            // FIX 2: Pakai Query Builder agar tidak error kolom "created_at"
             DB::table('crop_recommendation')->insert($insertData);
 
-            // 6. Ambil ulang data yang baru disimpan untuk mapping ke FE
+            // 6. Ambil ulang data untuk mapping ke FE
             $saved = DB::table('crop_recommendation')
                 ->where('input_id', $input_id)
                 ->get();
