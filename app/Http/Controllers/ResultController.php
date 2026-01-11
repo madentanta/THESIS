@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
@@ -12,39 +11,42 @@ class ResultController extends Controller
 {
     /**
      * Ambil semua rekomendasi tanaman berdasarkan input_id
-     * Terintegrasi dengan FastAPI (Hopular) di Docker VPS
+     * Terintegrasi dengan FastAPI (Hopular)
      */
     public function getRecommendation($input_id)
     {
-        // 1. Hardcode care instructions untuk Response FE
+        // 1. Manual perawatan (stabil untuk FE)
         $careManual = [
             "Tebu" => "1. Siram tiap 3 hari.\n2. Pupuk NPK tiap 2 minggu.\n3. Pastikan tanah gembur dan subur.\n4. Jaga jarak tanam 1.2 m antar tanaman.\n5. Panen setelah 10-12 bulan.",
-            "Jagung" => "1. Siram tiap 2 hari, terutama saat musim kemarau.\n2. Pupuk urea atau NPK tiap 1 minggu.\n3. Tanam di tanah yang kaya organik.\n4. Pastikan mendapat sinar matahari penuh.\n5. Jaga jarak tanam 25-30 cm per tanaman.\n6. Panen setelah 3-4 bulan.",
-            "Padi" => "1. Sirami rutin, jaga air tetap tergenang 5-10 cm.\n2. Pupuk NPK dan pupuk organik sesuai dosis.\n3. Kontrol hama seperti wereng dan penggerek batang.\n4. Pastikan padi mendapat sinar matahari cukup.\n5. Panen setelah 4-5 bulan."
+            "Jagung" => "1. Siram tiap 2 hari.\n2. Pupuk urea/NPK tiap 1 minggu.\n3. Sinar matahari penuh.\n4. Jarak tanam 25-30 cm.\n5. Panen 3-4 bulan.",
+            "Padi" => "1. Air tergenang 5–10 cm.\n2. Pupuk sesuai dosis.\n3. Kendalikan hama.\n4. Panen 4–5 bulan."
         ];
 
-        // 2. Cek apakah rekomendasi sudah ada di DB
+        // 2. Ambil cache hasil rekomendasi (ANTI HIT AI ULANG)
         $existing = DB::table('crop_recommendation')
             ->where('input_id', $input_id)
             ->get();
 
         if ($existing->isNotEmpty()) {
-            $recommendations = $existing->map(function($item) use ($careManual) {
-                return [
-                    "nama_tanaman" => $item->recommended_crop,
-                    "care_instructions" => $careManual[$item->recommended_crop] ?? ($item->care_instructions ?? "Instruksi tidak tersedia.")
-                ];
-            });
-
             return response()->json([
                 "success" => true,
                 "input_id" => $input_id,
-                "recommendations" => $recommendations
+                "recommendations" => $existing->map(function ($item) use ($careManual) {
+                    return [
+                        "nama_tanaman" => $item->recommended_crop,
+                        "care_instructions" =>
+                            $careManual[$item->recommended_crop]
+                            ?? $item->care_instructions
+                            ?? "Instruksi tidak tersedia."
+                    ];
+                })
             ]);
         }
 
-        // 3. Ambil data input dari database
-        $inputData = DB::table('input')->where('input_id', $input_id)->first();
+        // 3. Ambil data input
+        $inputData = DB::table('input')
+            ->where('input_id', $input_id)
+            ->first();
 
         if (!$inputData) {
             return response()->json([
@@ -54,20 +56,18 @@ class ResultController extends Controller
         }
 
         try {
-            // 4. Panggil AI (PARAMETER TETAP SESUAI ASLINYA)
-            $aiResponse = Http::timeout(60) 
+            // 4. Call AI Hopular
+            $aiResponse = Http::timeout(60)
                 ->retry(2, 1000)
                 ->post("http://ai:8001/inference", [
-                    "input_data" => [
-                        [
-                            "soil_ph" => floatval($inputData->soil_ph),
-                            "temperature" => floatval($inputData->temperature),
-                            "humidity" => floatval($inputData->humidity),
-                            "location" => $inputData->location,
-                            "previous_crop" => $inputData->previous_crop
-                        ]
-                    ],
-                    "model_path" => "output/best_hopular_model.pt",
+                    "input_data" => [[
+                        "soil_ph"        => (float) $inputData->soil_ph,
+                        "temperature"   => (float) $inputData->temperature,
+                        "humidity"      => (float) $inputData->humidity,
+                        "location"      => $inputData->location,
+                        "previous_crop" => $inputData->previous_crop
+                    ]],
+                    "model_path"    => "output/best_hopular_model.pt",
                     "metadata_path" => "output/metadata.pkl"
                 ]);
 
@@ -78,52 +78,44 @@ class ResultController extends Controller
             $resultAI = $aiResponse->json();
             $rawPredictions = $resultAI['predictions'][0] ?? [];
 
-            // FIX 1: Decode data jika berupa string JSON berantakan
-            if (is_string($rawPredictions)) {
-                $predictions = json_decode($rawPredictions, true);
-            } else {
-                $predictions = $rawPredictions;
-            }
-
-            // PENTING: Jangan tulis ulang $predictions di sini agar hasil decode tidak hilang
+            // Handle string JSON / array
+            $predictions = is_string($rawPredictions)
+                ? json_decode($rawPredictions, true)
+                : $rawPredictions;
 
             if (empty($predictions)) {
                 throw new Exception("AI tidak memberikan hasil prediksi.");
             }
 
-            // 5. Simpan hasil prediksi ke database
+            // 5. Simpan hasil AI (TERMASUK score, TAPI TIDAK KE FE)
             $now = Carbon::now();
             $insertData = [];
 
             foreach ($predictions as $pred) {
                 $insertData[] = [
                     "input_id"          => $input_id,
-                    "recommended_crop"  => $pred['nama_tanaman'] ?? 'Tanaman',
-                    "care_instructions" => $pred['keterangan'] ?? null, 
+                    "recommended_crop"  => $pred['nama_tanaman'],
+                    "care_instructions" => $pred['keterangan'] ?? null,
                     "score"             => $pred['kecocokan'] ?? null,
                     "recommended_at"    => $now
                 ];
             }
 
-            // FIX 2: Pakai Query Builder agar tidak error kolom "created_at"
             DB::table('crop_recommendation')->insert($insertData);
 
-            // 6. Ambil ulang data untuk mapping ke FE
-            $saved = DB::table('crop_recommendation')
-                ->where('input_id', $input_id)
-                ->get();
-
-            $recommendations = $saved->map(function($item) use ($careManual) {
-                return [
-                    "nama_tanaman" => $item->recommended_crop,
-                    "care_instructions" => $careManual[$item->recommended_crop] ?? ($item->care_instructions ?? "Instruksi tidak tersedia.")
-                ];
-            });
-
+            // 6. Return response ke FE (TANPA SCORE)
             return response()->json([
                 "success" => true,
                 "input_id" => $input_id,
-                "recommendations" => $recommendations
+                "recommendations" => collect($insertData)->map(function ($item) use ($careManual) {
+                    return [
+                        "nama_tanaman" => $item['recommended_crop'],
+                        "care_instructions" =>
+                            $careManual[$item['recommended_crop']]
+                            ?? $item['care_instructions']
+                            ?? "Instruksi tidak tersedia."
+                    ];
+                })
             ]);
 
         } catch (Exception $e) {
