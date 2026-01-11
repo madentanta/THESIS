@@ -95,8 +95,7 @@ class ResultController extends Controller
                     "recommended_crop" => $pred['nama_tanaman'],
                     "care_instructions" => $pred['keterangan'] ?? null, 
                     "score" => $pred['kecocokan'] ?? null,
-                    "created_at" => $now,
-                    "updated_at" => $now
+                    "recommended_at"=> $now
                 ];
             }
 
