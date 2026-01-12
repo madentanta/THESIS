@@ -175,23 +175,26 @@ class HopularInference:
             else:
                 return [self._generate_recommendation(prob) for prob in probabilities]
 
-    def _generate_recommendation(self, probabilities: np.ndarray) -> List[Dict]:
-        """Return all predictions without any threshold"""
-        recommendations = []
+    def _generate_recommendation(self, probabilities: np.ndarray) -> Dict:
+        """Return only top recommendation with probability >= 0.5"""
         target_encoder = self.metadata.get('target_label_encoder')
         class_names = target_encoder.classes_ if target_encoder else ["Tebu", "Jagung", "Padi"]
 
-        for class_idx, prob in enumerate(probabilities):
-            crop_name = class_names[class_idx]
-            recommendations.append({
-                "nama_tanaman": crop_name,
-                "kecocokan": float(prob),
-                "keterangan": "Rekomendasi tanaman berdasarkan probabilitas model."
-            })
+        # Filter probabilitas >= 0.5
+        recommendations = [
+            {"nama_tanaman": class_names[i], "kecocokan": float(prob)}
+            for i, prob in enumerate(probabilities)
+            if prob >= 0.5
+        ]
 
-        # Urutkan dari probabilitas tertinggi
-        recommendations.sort(key=lambda x: x["kecocokan"], reverse=True)
-        return recommendations
+        # Kalau ga ada >=0.5, ambil yang tertinggi
+        if not recommendations:
+            max_idx = int(np.argmax(probabilities))
+            recommendations = [{"nama_tanaman": class_names[max_idx],
+                                "kecocokan": float(probabilities[max_idx])}]
+
+        # Ambil rekomendasi pertama (top)
+        return recommendations[0]
 
     def _postprocess_predictions(self, target_predictions: torch.Tensor) -> np.ndarray:
         task = self.metadata.get('task', 'classification')
