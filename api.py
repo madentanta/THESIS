@@ -12,7 +12,7 @@ from typing import Optional, List, Dict, Any
 import subprocess
 import sys
 import os
-import uuid
+import uuid # FIXED: tadinya uuida
 import json
 from datetime import datetime
 import threading
@@ -20,6 +20,8 @@ import asyncio
 from enum import Enum
 import pandas as pd
 
+# Import model inference
+from bin.inference import HopularInference
 
 app = FastAPI(
     title="Hopular API",
@@ -83,8 +85,8 @@ class InferenceRequest(BaseModel):
     """
     Request model for inference
     """
-    model_path: Optional[str] = "best_hopular_model.pt"
-    metadata_path: Optional[str] = "metadata.pkl"
+    model_path: Optional[str] = "output/best_hopular_model.pt"
+    metadata_path: Optional[str] = "output/metadata.pkl"
     input_data: List[Dict[str, Any]]  # List of records to predict
     target_column: Optional[str] = None  # Column to exclude from prediction
 
@@ -100,9 +102,11 @@ class InferenceResponse(BaseModel):
     processed_at: datetime
 
 
-# In-memory storage for job status (in production, use a database)
+# In-memory storage for job status
 jobs = {}
 
+# Cache model instance
+_INFERENCE_CACHE = {}
 
 def run_command_async(cmd: list, description: str, job_id: str):
     """
@@ -150,13 +154,8 @@ def run_train_pipeline_async(request: RunTrainRequest, job_id: str):
             sys.executable, "bin/fetch_from_supabase.py",
             "--output", request.data
         ]
-
         fetch_success = run_command_async(fetch_cmd, "Fetching data from Supabase", job_id)
-
-        if not fetch_success:
-            jobs[job_id]["status"] = PipelineStatus.FAILED
-            jobs[job_id]["message"] = "Failed to fetch data from Supabase"
-            return
+        if not fetch_success: return
 
         # Step 2: Preprocess the data
         preprocess_cmd = [
@@ -164,13 +163,8 @@ def run_train_pipeline_async(request: RunTrainRequest, job_id: str):
             "--input", request.data,
             "--output", request.output_csv
         ]
-
         preprocess_success = run_command_async(preprocess_cmd, "Preprocessing data", job_id)
-
-        if not preprocess_success:
-            jobs[job_id]["status"] = PipelineStatus.FAILED
-            jobs[job_id]["message"] = "Failed to preprocess data"
-            return
+        if not preprocess_success: return
 
         # Step 3: Train the model
         train_cmd = [
@@ -182,13 +176,8 @@ def run_train_pipeline_async(request: RunTrainRequest, job_id: str):
             "--patience", str(request.patience),
             "--test_size", str(request.test_size),
         ]
-
         train_success = run_command_async(train_cmd, "Training the Hopular model", job_id)
-
-        if not train_success:
-            jobs[job_id]["status"] = PipelineStatus.FAILED
-            jobs[job_id]["message"] = "Failed to train the model"
-            return
+        if not train_success: return
 
         # Update job with output files
         jobs[job_id]["data"] = request.data
@@ -198,6 +187,9 @@ def run_train_pipeline_async(request: RunTrainRequest, job_id: str):
         jobs[job_id]["status"] = PipelineStatus.COMPLETED
         jobs[job_id]["message"] = "Pipeline completed successfully!"
         jobs[job_id]["completed_at"] = datetime.now()
+        
+        # CLEAR CACHE agar model baru dibaca
+        _INFERENCE_CACHE.clear()
 
         print(f"Job {job_id}: Pipeline completed successfully!")
 
@@ -206,11 +198,6 @@ def run_train_pipeline_async(request: RunTrainRequest, job_id: str):
         jobs[job_id]["message"] = f"Pipeline failed with exception: {str(e)}"
         print(f"Job {job_id}: Exception occurred: {str(e)}")
 
-from typing import List, Dict, Any, Optional
-from bin.inference import HopularInference
-
-# Cache model instance (important for performance)
-_INFERENCE_CACHE = {}
 
 def run_inference(
     input_data: List[Dict[str, Any]],
@@ -221,13 +208,8 @@ def run_inference(
     """
     Run inference using HopularInference directly (NO subprocess)
     """
-
     try:
-        # --------------------------------------------------
-        # Cache model so we don't reload every request
-        # --------------------------------------------------
         cache_key = f"{model_path}|{metadata_path}"
-
         if cache_key not in _INFERENCE_CACHE:
             _INFERENCE_CACHE[cache_key] = HopularInference(
                 model_path=model_path,
@@ -235,11 +217,12 @@ def run_inference(
             )
 
         inference_model = _INFERENCE_CACHE[cache_key]
-
-        # --------------------------------------------------
-        # Run inference
-        # --------------------------------------------------
         predictions = inference_model.predict_with_recommendations(input_data)
+
+        # Logic Flattening untuk Kode Kedua agar tidak list-dalam-list
+        if isinstance(predictions, list) and len(predictions) > 0:
+            if isinstance(predictions[0], list):
+                predictions = [item for sublist in predictions for item in sublist]
 
         return {
             "predictions": predictions,
@@ -256,23 +239,14 @@ def run_inference(
         }
 
 
-
 @app.get("/")
 def read_root():
-    """
-    Root endpoint to check if the API is running
-    """
     return {"message": "Hopular API is running", "version": "1.0.0"}
 
 
 @app.post("/run_train", response_model=RunTrainResponse, status_code=202)
 async def run_train(request: RunTrainRequest):
-    """
-    Start the run_train pipeline asynchronously
-    """
     job_id = str(uuid.uuid4())
-
-    # Store job info
     jobs[job_id] = {
         "job_id": job_id,
         "status": PipelineStatus.PENDING,
@@ -286,7 +260,6 @@ async def run_train(request: RunTrainRequest):
         "metadata_path": None
     }
 
-    # Run the pipeline in a separate thread
     thread = threading.Thread(
         target=run_train_pipeline_async,
         args=(request, job_id)
@@ -303,52 +276,24 @@ async def run_train(request: RunTrainRequest):
 
 @app.get("/run_train/{job_id}", response_model=RunTrainStatusResponse)
 async def get_run_train_status(job_id: str):
-    """
-    Check the status of a run_train job
-    """
     if job_id not in jobs:
         raise HTTPException(status_code=404, detail="Job not found")
 
     job = jobs[job_id]
-    return RunTrainStatusResponse(
-        job_id=job["job_id"],
-        status=job["status"],
-        message=job["message"],
-        progress=job.get("progress"),
-        created_at=job["created_at"],
-        completed_at=job.get("completed_at"),
-        data=job.get("data"),
-        output_csv=job.get("output_csv"),
-        model_path=job.get("model_path"),
-        metadata_path=job.get("metadata_path")
-    )
+    return RunTrainStatusResponse(**job)
 
 
 @app.post("/inference", response_model=InferenceResponse)
 async def run_inference_endpoint(request: InferenceRequest):
-    """
-    Run inference on input data using a trained model
-    """
-    # Check if model and metadata files exist
     if not os.path.exists(request.model_path):
-        raise HTTPException(
-            status_code=404,
-            detail=f"Model file not found: {request.model_path}"
-        )
+        raise HTTPException(status_code=404, detail=f"Model file not found: {request.model_path}")
 
     if not os.path.exists(request.metadata_path):
-        raise HTTPException(
-            status_code=404,
-            detail=f"Metadata file not found: {request.metadata_path}"
-        )
+        raise HTTPException(status_code=404, detail=f"Metadata file not found: {request.metadata_path}")
 
     if not request.input_data:
-        raise HTTPException(
-            status_code=400,
-            detail="Input data is required"
-        )
+        raise HTTPException(status_code=400, detail="Input data is required")
 
-    # Run inference
     result = run_inference(
         input_data=request.input_data,
         model_path=request.model_path,
@@ -357,10 +302,7 @@ async def run_inference_endpoint(request: InferenceRequest):
     )
 
     if not result["success"]:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Inference failed: {result.get('error', 'Unknown error')}"
-        )
+        raise HTTPException(status_code=500, detail=f"Inference failed: {result.get('error', 'Unknown error')}")
 
     return InferenceResponse(
         predictions=result["predictions"],
