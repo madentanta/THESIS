@@ -9,76 +9,91 @@ use Exception;
 
 class ResultController extends Controller
 {
+    /**
+     * Ambil rekomendasi tanaman terbaik (Top-1) berdasarkan input_id
+     * Terintegrasi dengan HopularInference Python
+     */
     public function getRecommendation($input_id)
     {
+        // 1. Manual perawatan (Mapping untuk Front-End)
         $careManual = [
             "Tebu" => "1. Siram tiap 3 hari.\n2. Pupuk NPK tiap 2 minggu.\n3. Pastikan tanah gembur dan subur.\n4. Jaga jarak tanam 1.2 m antar tanaman.\n5. Panen setelah 10-12 bulan.",
             "Jagung" => "1. Siram tiap 2 hari.\n2. Pupuk urea/NPK tiap 1 minggu.\n3. Sinar matahari penuh.\n4. Jarak tanam 25-30 cm.\n5. Panen 3-4 bulan.",
             "Padi" => "1. Air tergenang 5–10 cm.\n2. Pupuk sesuai dosis.\n3. Kendalikan hama.\n4. Panen 4–5 bulan."
         ];
 
-        // 1. Cek Cache Database
-        $existing = DB::table('crop_recommendation')->where('input_id', $input_id)->get();
+        // 2. Cek apakah hasil sudah ada di Database (Cache)
+        $existing = DB::table('crop_recommendation')
+            ->where('input_id', $input_id)
+            ->get();
 
         if ($existing->isNotEmpty()) {
             return response()->json([
                 "success" => true,
-                "input_id" => $input_id,
+                "input_id" => (int) $input_id,
                 "recommendations" => $existing->map(function ($item) use ($careManual) {
                     return [
                         "nama_tanaman" => $item->recommended_crop,
-                        "care_instructions" => $careManual[$item->recommended_crop] ?? $item->care_instructions ?? "Instruksi tidak tersedia."
+                        "care_instructions" => $careManual[$item->recommended_crop] 
+                                               ?? $item->care_instructions 
+                                               ?? "Instruksi tidak tersedia."
                     ];
                 })
             ]);
         }
 
-        // 2. Ambil Input Data
-        $inputData = DB::table('input')->where('input_id', $input_id)->first();
+        // 3. Ambil data input dari database berdasarkan ID
+        $inputData = DB::table('input')
+            ->where('input_id', $input_id)
+            ->first();
+
         if (!$inputData) {
-            return response()->json(["success" => false, "message" => "Input data tidak ditemukan."], 404);
+            return response()->json([
+                "success" => false,
+                "message" => "Input data tidak ditemukan di database."
+            ], 404);
         }
 
         try {
-            // 3. Panggil AI
-            $aiResponse = Http::timeout(60)->retry(2, 1000)->post("http://ai:8001/inference", [
-                "input_data" => [[
-                    "soil_ph"       => (float) $inputData->soil_ph,
-                    "temperature"   => (float) $inputData->temperature,
-                    "humidity"      => (float) $inputData->humidity,
-                    "location"      => $inputData->location,
-                    "previous_crop" => $inputData->previous_crop
-                ]],
-                "model_path"    => "output/best_hopular_model.pt",
-                "metadata_path" => "output/metadata.pkl"
-            ]);
+            // 4. Panggil Service AI FastAPI
+            $aiResponse = Http::timeout(60)
+                ->retry(2, 1000)
+                ->post("http://ai:8001/inference", [
+                    "input_data" => [[
+                        "soil_ph"       => (float) $inputData->soil_ph,
+                        "temperature"   => (float) $inputData->temperature,
+                        "humidity"      => (float) $inputData->humidity,
+                        "location"      => $inputData->location,
+                        "previous_crop" => $inputData->previous_crop
+                    ]],
+                    "model_path"    => "output/best_hopular_model.pt",
+                    "metadata_path" => "output/metadata.pkl"
+                ]);
 
             if ($aiResponse->failed()) {
                 throw new Exception("AI Service Error: " . $aiResponse->status());
             }
 
-            // --- BAGIAN PERBAIKAN (LOGIKA ADAPTIF) ---
             $responseBody = $aiResponse->json();
-            
-            // Cek apakah response dibungkus array [ {...} ] atau langsung {...}
-            $prediction = isset($responseBody[0]) ? $responseBody[0] : $responseBody;
+            $prediction = null;
 
-            // Jika masih gagal, cek apakah ada di dalam key 'predictions' (format lama)
-            if (!isset($prediction['nama_tanaman']) && isset($responseBody['predictions'][0])) {
-                $prediction = $responseBody['predictions'][0];
+            // --- LOGIKA ADAPTIF UNTUK MODUL HOPULAR ---
+            // Sesuai kode Python: jika input [[...]] maka output adalah [{...}]
+            if (isset($responseBody[0]['nama_tanaman'])) {
+                $prediction = $responseBody[0];
+            } elseif (isset($responseBody['nama_tanaman'])) {
+                $prediction = $responseBody;
             }
 
-            if (!isset($prediction['nama_tanaman'])) {
-                // Berikan pesan error yang sangat detail agar kita bisa debug jika gagal lagi
+            if (!$prediction) {
                 throw new Exception("Format AI tidak valid. Data diterima: " . json_encode($responseBody));
             }
-            // --- END PERBAIKAN ---
 
             $cropName = $prediction['nama_tanaman'];
             $score = $prediction['kecocokan'] ?? 0;
             $now = Carbon::now();
 
-            // 4. Simpan ke Database
+            // 5. Simpan hasil rekomendasi ke Database
             DB::table('crop_recommendation')->insert([
                 "input_id"          => $input_id,
                 "recommended_crop"  => $cropName,
@@ -87,10 +102,10 @@ class ResultController extends Controller
                 "recommended_at"    => $now
             ]);
 
-            // 5. Response ke Front-End
+            // 6. Return response final ke Front-End
             return response()->json([
                 "success" => true,
-                "input_id" => $input_id,
+                "input_id" => (int) $input_id,
                 "recommendations" => [
                     [
                         "nama_tanaman" => $cropName,
