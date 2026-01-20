@@ -4,203 +4,184 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Hasil Rekomendasi - PlantAdvisor</title>
+
     <link rel="stylesheet" href="style.css" /> 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
     <style>
+        .card-tanaman { display: none; }
+
         .container-detail {
             max-width: 900px;
             margin: 40px auto;
             padding: 20px;
         }
-        .page-title {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--color-primary);
-            margin-bottom: 20px;
-        }
-        .back-link {
-            text-decoration: none;
-            color: var(--color-primary);
-            margin-right: 10px;
-        }
-        .content-box {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
+
         #loading-state, #error-state {
             text-align: center;
-            padding: 20px;
-        }
-        .recommendation-card {
-            border: 1px solid #eee;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        .recommendation-card.recommended {
-            border: 2px solid var(--color-success);
-            background-color: #f0fff0;
-        }
-        .plant-header h4 {
-            margin: 0;
-            color: var(--color-primary);
-            font-size: 18px;
-            font-weight: 800;
-        }
-        .description-text {
-            font-size: 14px;
-            color: #555;
-            margin: 10px 0;
+            padding: 40px;
         }
     </style>
 </head>
+
 <body>
-    <header class="main-header">
-        <div class="logo">PlantAdvisor</div>
-        <nav class="main-nav">
-            <a href="beranda.html">Beranda</a>
-        </nav>
-        <div class="header-buttons" id="headerButtons"></div>
-    </header>
+<header class="main-header">
+    <div class="logo">PlantAdvisor</div>
+    <nav class="main-nav">
+        <a href="beranda.html">Beranda</a>
+    </nav>
+    <div class="header-buttons" id="headerButtons"></div>
+</header>
 
-    <main class="container-detail">
-        <h2 class="page-title">
-            <a href="beranda.html" class="back-link">&lt;</a> Hasil Rekomendasi Tanaman
-        </h2>
+<main class="container-detail">
+    <h2 class="page-title">
+        <a href="beranda.html" class="back-link">&lt;</a> Hasil Rekomendasi Tanaman
+    </h2>
 
-        <div id="content-area">
-            <div id="loading-state" class="content-box">
-                <p>⚙️ <b>Memproses data tanah...</b> Mohon tunggu sebentar.</p>
-            </div>
+    <div id="loading-state" class="content-box">
+        <p>⚙️ <b>Memproses data tanah...</b> Mohon tunggu sebentar.</p>
+    </div>
 
-            <div id="error-state" class="content-box" style="display:none; border-left: 5px solid var(--color-danger); padding: 15px;">
-                <p>❌ Gagal memuat rekomendasi.</p>
-            </div>
+    <div id="error-state" class="content-box" style="display:none; border-left: 5px solid #e74c3c;">
+        <p id="error-message">❌ Gagal memuat rekomendasi.</p>
+    </div>
 
-            <div id="result-container" class="content-box"></div>
+    <div id="result-wrapper"></div>
+
+    <!-- TEMPLATE PADI -->
+    <div id="tpl-padi" class="card-tanaman content-box">
+        <div class="plant-header">
+            <img src="padi.png" class="plant-image"/>
+            <h3>Tanaman Padi</h3>
         </div>
+        <p class="plant-description">
+            Padi merupakan tanaman pangan utama di Indonesia yang membutuhkan lahan tergenang air.
+        </p>
+        <h4 class="section-title">🌾 Cara Menanam Padi</h4>
+    </div>
 
-        <div class="action-buttons">
-            <a href='beranda.html#AII' class="btn btn-primary btn-large">Coba Input Baru</a>
+    <!-- TEMPLATE TEBU -->
+    <div id="tpl-tebu" class="card-tanaman content-box">
+        <div class="plant-header">
+            <img src="tebu.png" class="plant-image"/>
+            <h3>Tanaman Tebu</h3>
         </div>
-    </main>
+        <p class="plant-description">
+            Tebu adalah bahan baku utama pembuatan gula dan membutuhkan sinar matahari penuh.
+        </p>
+        <h4 class="section-title">🎋 Cara Menanam Tebu</h4>
+    </div>
 
-    <footer class="footer">
-        © 2025 PlantAdvisor. All rights reserved.
-    </footer>
+    <!-- TEMPLATE JAGUNG -->
+    <div id="tpl-jagung" class="card-tanaman content-box">
+        <div class="plant-header">
+            <img src="jagung.png" class="plant-image"/>
+            <h3>Tanaman Jagung</h3>
+        </div>
+        <p class="plant-description">
+            Jagung merupakan tanaman palawija yang mudah dibudidayakan.
+        </p>
+        <h4 class="section-title">🌽 Cara Menanam Jagung</h4>
+    </div>
 
-    <script>
-        const API_BASE_URL = "http://plantadvisor.cloud/api";
+    <div class="action-buttons">
+        <a href="beranda.html" class="btn btn-primary btn-large">Selesai / Kembali ke Beranda</a>
+    </div>
+</main>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchRecommendation();
-            updateHeaderButtons();
-        });
+<footer class="footer">
+    © 2025 PlantAdvisor. All rights reserved.
+</footer>
 
-        function updateHeaderButtons() {
-            const headerButtons = document.getElementById('headerButtons');
-            const token = localStorage.getItem("token");
+<script>
+const API_BASE_URL = 'http://plantadvisor.cloud/api'; 
 
-            if (!headerButtons) return;
+document.addEventListener("DOMContentLoaded", () => {
+    fetchRecommendation();
+    updateHeaderButtons();
+});
 
-            if (token) {
-                headerButtons.innerHTML = `
-                    <a href="#" class="btn btn-logout" onclick="handleLogout(event)">Logout</a>
-                `;
-            } else {
-                headerButtons.innerHTML = `
-                    <a href="login.html" class="btn btn-primary">Login</a>
-                `;
-            }
-        }
+async function fetchRecommendation() {
+    const inputId = localStorage.getItem("input_id");
+    const loadingState = document.getElementById("loading-state");
+    const errorState = document.getElementById("error-state");
 
-        function handleLogout(e) {
-            e.preventDefault();
-            localStorage.removeItem("token");
-            localStorage.removeItem("input_id");
-            localStorage.removeItem("user_id");
-            window.location.href = "beranda.html";
-        }
-
-        async function fetchRecommendation() {
-            const inputId = localStorage.getItem('last_input_id'); // FIX 🔥
-            const resultContainer = document.getElementById('result-container');
-            const loadingState = document.getElementById('loading-state');
-            const errorState = document.getElementById('error-state');
-
-            console.log("Input ID ditemukan:", inputId); // Debug
-
-            if (!inputId) {
-                loadingState.innerHTML = "❌ Data input tidak ditemukan. Silakan <a href='beranda.html' style='color:var(--color-primary);'>isi data tanah</a> terlebih dahulu.";
-                return;
-            }
-
-            const recommendationUrl = `${API_BASE_URL}/recommendation/${inputId}`;
-            const token = localStorage.getItem("token");
-
-            const headers = {};
-            if (token) headers["Authorization"] = `Bearer ${token}`;
-
-            loadingState.style.display = 'block';
-            resultContainer.innerHTML = '';
-            errorState.style.display = 'none';
-
-            try {
-                const response = await fetch(recommendationUrl, { method: 'GET', headers });
-                const result = await response.json();
-
-                loadingState.style.display = 'none';
-
-                if (response.ok) {
-                    displayRecommendation(result.recommendation_data);
-                    localStorage.removeItem('input_id'); // FIX 🔥
-                } else {
-                    errorState.textContent = `✗ Error API: ${result.message || 'Gagal memproses rekomendasi'}.`;
-                    errorState.style.display = 'block';
-                }
-
-            } catch (error) {
-                console.error("Fetch Error:", error);
-                loadingState.style.display = 'none';
-                errorState.textContent = "Terjadi masalah koneksi ke server rekomendasi. Cek konsol.";
-                errorState.style.display = 'block';
-            }
-        }
-
-function displayRecommendation(data) {
-    const container = document.getElementById('result-container');
-
-    if (!data || data.length === 0) {
-        container.innerHTML = "<h3>Tidak ada rekomendasi</h3><p>Tidak ditemukan tanaman yang cocok.</p>";
+    if (!inputId) {
+        loadingState.innerHTML = "❌ Data input tidak ditemukan.";
         return;
     }
 
-    let html = `<h3>✅ ${data.length} Rekomendasi Tanaman:</h3>`;
+    try {
+        const token = localStorage.getItem("token");
+        const headers = token ? { "Authorization": `Bearer ${token}` } : {};
 
-    data.forEach((plant, index) => {
-        // Gunakan care_instructions dari controller (hardcode) sebagai alasan
-        const cardClass = 'recommendation-card'; // FE tidak perlu highlight probabilitas
+        const response = await fetch(`${API_BASE_URL}/recommendation/${inputId}`, { headers });
+        const result = await response.json();
 
-        html += `
-            <div class="${cardClass}">
-                <div class="plant-header">
-                    <h4>${index + 1}. ${plant.nama_tanaman}</h4>
-                </div>
-                <p class="description-text">
-                    <b>Alasan:</b> ${plant.care_instructions}
-                </p>
-                <a href="detail-tanaman.html?name=${plant.nama_tanaman}" class="btn btn-outline">Lihat Detail</a>
-            </div>
-        `;
-    });
+        loadingState.style.display = "none";
 
-    container.innerHTML = html;
+        if (response.ok && result.recommendations) {
+            renderCards(result.recommendations);
+        } else {
+            throw new Error(result.message || "Gagal mengambil rekomendasi.");
+        }
+
+    } catch (err) {
+        loadingState.style.display = "none";
+        errorState.style.display = "block";
+        document.getElementById("error-message").innerText = err.message;
+    }
 }
 
-    </script>
+function renderCards(data) {
+    const wrapper = document.getElementById("result-wrapper");
+    wrapper.innerHTML = "";
 
+    data.forEach(item => {
+        const name = item.nama_tanaman.toLowerCase();
+        let tplId = "";
+
+        if (name.includes("padi")) tplId = "tpl-padi";
+        else if (name.includes("tebu")) tplId = "tpl-tebu";
+        else if (name.includes("jagung")) tplId = "tpl-jagung";
+
+        if (!tplId) return;
+
+        const template = document.getElementById(tplId);
+        const clone = template.cloneNode(true);
+
+        const reason = document.createElement("div");
+        reason.className = "plant-description";
+        reason.style.background = "#eefaf2";
+        reason.style.padding = "10px";
+        reason.style.borderRadius = "8px";
+        reason.style.borderLeft = "4px solid #27ae60";
+        reason.innerHTML = `<strong>💡 Rekomendasi Sistem:</strong><br>${item.care_instructions.replace(/\n/g,"<br>")}`;
+
+        clone.style.display = "block";
+        clone.insertBefore(reason, clone.querySelector(".section-title"));
+        wrapper.appendChild(clone);
+    });
+}
+
+function updateHeaderButtons() {
+    const headerButtons = document.getElementById("headerButtons");
+    const token = localStorage.getItem("token");
+
+    if (token) {
+        headerButtons.innerHTML =
+            `<a href="#" class="btn btn-logout" onclick="handleLogout(event)">Logout</a>`;
+    } else {
+        headerButtons.innerHTML =
+            `<a href="login.html" class="btn btn-primary">Login</a>`;
+    }
+}
+
+function handleLogout(e) {
+    e.preventDefault();
+    localStorage.clear();
+    window.location.href = "beranda.html";
+}
+</script>
 </body>
 </html>
