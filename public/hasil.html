@@ -74,7 +74,7 @@
             margin-bottom: 15px;
             display: flex;
             gap: 20px;
-            border-left: 6px solid #c0d633;
+            border-left: 6px solid hsl(68, 84%, 28%);
             transition: transform 0.2s ease;
         }
 
@@ -83,7 +83,7 @@
         }
 
         .step-number {
-            background: #c0d633;
+            background: hsl(68, 84%, 28%);
             color: #fff;
             width: 35px;
             height: 35px;
@@ -134,7 +134,7 @@
 
         .btn-large {
             padding: 18px 50px;
-            background-color: #c0d633;
+            background-color: hsl(68, 84%, 28%);
             color: #fff;
             border-radius: 15px;
             font-weight: 700;
@@ -151,7 +151,7 @@
             padding: 20px;
             border-radius: 15px;
             margin-bottom: 25px;
-            border-left: 4px solid #c0d633;
+            border-left: 4px solid hsl(68, 84%, 28%);
             font-size: 14px;
             line-height: 1.6;
         }
@@ -174,9 +174,10 @@
     <div id="tpl-padi" class="card-tanaman content-box">
         <div class="plant-header">
             <img src="padi.png" class="plant-image" alt="Padi"/>
-            <h3>Tanaman Padi</h3>
+            <h3>Tanaman Padi <span class="latin-name">(Oryza sativa)</span></h3>
+
         </div>
-        <h4 class="section-title">🌾 Panduan Budidaya 5 Tahap</h4>
+        <h4 class="section-title">🌾 Panduan Budidaya - Panen</h4>
 
         <div class="step">
             <div class="step-number">1</div>
@@ -233,9 +234,10 @@
     <div id="tpl-jagung" class="card-tanaman content-box">
         <div class="plant-header">
             <img src="jagung.jpeg" class="plant-image" alt="Jagung"/>
-            <h3>Tanaman Jagung</h3>
+            <h3>Tanaman Jagung <span class="latin-name">(Zea mays)</span></h3>
+
         </div>
-        <h4 class="section-title">🌽 Panduan Budidaya 5 Tahap</h4>
+        <h4 class="section-title">🌽 Panduan Budidaya - Panen</h4>
 
         <div class="step">
             <div class="step-number">1</div>
@@ -292,9 +294,10 @@
     <div id="tpl-tebu" class="card-tanaman content-box">
         <div class="plant-header">
             <img src="tebu.png" class="plant-image" alt="Tebu"/>
-            <h3>Tanaman Tebu</h3>
+            <h3>Tanaman Tebu <span class="latin-name">(Saccharum officinarum)</span></h3>
+
         </div>
-        <h4 class="section-title">🎋 Panduan Budidaya 5 Tahap</h4>
+        <h4 class="section-title">🎋 Panduan Budidaya - Panen</h4>
 
         <div class="step">
             <div class="step-number">1</div>
@@ -395,7 +398,7 @@
             // Tambahkan Box Analisis dari Database
             const analysis = document.createElement("div");
             analysis.className = "analysis-box";
-            analysis.innerHTML = `<b>💡 Analisis PlantAdvisor:</b><br>${item.care_instructions.replace(/\n/g,"<br>")}`;
+            analysis.innerHTML = `<b>Ensiklopedia</b><br>${item.care_instructions.replace(/\n/g,"<br>")}`;
 
             clone.insertBefore(analysis, clone.querySelector(".section-title"));
             wrapper.appendChild(clone);
