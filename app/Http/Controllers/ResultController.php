@@ -11,11 +11,26 @@ class ResultController extends Controller
 {
     public function getRecommendation($input_id)
     {
-        $careManual = [
-            "Tebu" => "1. Siram tiap 3 hari.\n2. Pupuk NPK tiap 2 minggu.\n3. Pastikan tanah gembur dan subur.\n4. Jaga jarak tanam 1.2 m antar tanaman.\n5. Panen setelah 10-12 bulan.",
-            "Jagung" => "1. Siram tiap 2 hari.\n2. Pupuk urea/NPK tiap 1 minggu.\n3. Sinar matahari penuh.\n4. Jarak tanam 25-30 cm.\n5. Panen 3-4 bulan.",
-            "Padi" => "1. Air tergenang 5–10 cm.\n2. Pupuk sesuai dosis.\n3. Kendalikan hama.\n4. Panen 4–5 bulan."
-        ];
+      $careManual = [
+    "Padi" =>
+        "Padi adalah tanaman pangan penghasil beras yang tumbuh optimal di lahan sawah " .
+        "dengan kondisi air tergenang. Tanaman ini membutuhkan pengelolaan air yang stabil, " .
+        "pemupukan teratur, serta pengendalian hama agar menghasilkan gabah berkualitas " .
+        "dalam waktu panen sekitar 4–5 bulan.",
+
+    "Tebu" =>
+        "Tebu merupakan tanaman perkebunan yang menjadi bahan baku utama pembuatan gula. " .
+        "Tanaman ini membutuhkan tanah yang gembur dan subur, jarak tanam yang cukup lebar, " .
+        "serta pemupukan rutin. Dengan perawatan yang baik, tebu dapat dipanen setelah " .
+        "10–12 bulan masa tanam.",
+
+    "Jagung" =>
+        "Jagung adalah tanaman palawija yang mudah dibudidayakan dan membutuhkan sinar " .
+        "matahari penuh. Tanaman ini memerlukan penyiraman rutin, pemupukan berkala, " .
+        "serta pengaturan jarak tanam agar pertumbuhan optimal dan dapat dipanen dalam " .
+        "waktu 3–4 bulan."
+];
+
 
         // 1. Cek Cache Database
         $existing = DB::table('crop_recommendation')->where('input_id', $input_id)->get();
