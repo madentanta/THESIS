@@ -6,93 +6,167 @@
     <title>Hasil Rekomendasi - PlantAdvisor</title>
 
     <link rel="stylesheet" href="style.css" /> 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        .card-tanaman { display: none; }
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            color: #1e293b;
+            margin: 0;
+            padding: 0;
+        }
+
+        .card-tanaman { display: none; } /* Disembunyikan untuk dipanggil JS */
+
         .container-detail {
-            max-width: 900px;
+            max-width: 850px;
             margin: 40px auto;
             padding: 20px;
         }
-        #loading-state, #error-state {
-            text-align: center;
+
+        .content-box {
+            background: #fff;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid #eee;
         }
+
+        .plant-header {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .plant-image {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 20px;
+            background: #f0f0f0;
+        }
+
+        .plant-header h3 {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0;
+            color: #1a365d;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 35px 0 20px;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Styling Step 1-5 */
+        .step {
+            background: #f8fafc;
+            border-radius: 18px;
+            padding: 20px 25px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 20px;
+            border-left: 6px solid #c0d633;
+            transition: transform 0.2s ease;
+        }
+
+        .step:hover {
+            transform: translateX(5px);
+        }
+
+        .step-number {
+            background: #c0d633;
+            color: #fff;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            flex-shrink: 0;
+            font-size: 14px;
+            box-shadow: 0 4px 10px rgba(192, 214, 51, 0.3);
+        }
+
+        .step-content h5 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
         .steps-list {
-            list-style-type: none;
-            padding-left: 0;
-            margin-bottom: 25px;
+            list-style: none;
+            padding: 0;
+            margin: 0 !important;
         }
 
         .steps-list li {
             position: relative;
             padding-left: 25px;
-            margin-bottom: 8px;
+            font-size: 14.5px;
+            color: #475569;
             line-height: 1.6;
-            color: #444;
+            margin-bottom: 8px;
         }
 
         .steps-list li::before {
-            content: "✔️";
+            content: "🌱";
             position: absolute;
             left: 0;
-            color: #c0d633; /* Warna diubah menjadi hijau target */
-            font-size: 14px;
+            font-size: 12px;
+            top: 3px;
         }
 
-        .section-title {
-            margin-top: 20px;
-            color: #2c3e50;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 5px;
+        .action-buttons {
+            text-align: center;
+            margin-top: 50px;
         }
-        .step {
-            margin-bottom: 20px;
-        }
-        .step h5 {
-            margin-bottom: 8px;
-            color: #c0d633; /* Warna diubah menjadi hijau target */
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-        .steps-list {
-            margin-bottom: 15px !important;
-        }
-        .steps-list li {
-            font-size: 0.95rem;
-            color: #555;
-            margin-bottom: 5px;
-        }
-        /* Menambahkan gaya untuk tombol utama agar selaras dengan warna baru */
-        .btn-primary {
-            background-color: #c0d633 !important;
-            border-color: #c0d633 !important;
+
+        .btn-large {
+            padding: 18px 50px;
+            background-color: #c0d633;
             color: #fff;
+            border-radius: 15px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border: none;
+            box-shadow: 0 6px 20px rgba(192, 214, 51, 0.4);
+            cursor: pointer;
+        }
+
+        .analysis-box {
+            background: #f9fbe7;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 4px solid #c0d633;
+            font-size: 14px;
+            line-height: 1.6;
         }
     </style>
 </head>
 
 <body>
-<header class="main-header">
-    <div class="logo">PlantAdvisor</div>
-    <nav class="main-nav">
-        <a href="beranda.html">Beranda</a>
-    </nav>
-    <div class="header-buttons" id="headerButtons"></div>
-</header>
 
 <main class="container-detail">
-    <h2 class="page-title">
-        <a href="beranda.html" class="back-link">&lt;</a> Hasil Rekomendasi Tanaman
+    <h2 class="page-title" style="font-weight: 800; margin-bottom: 30px;">
+        <a href="beranda.html" style="text-decoration: none; color: #334155;">&lt;</a> Hasil Rekomendasi
     </h2>
 
-    <div id="loading-state" class="content-box">
-        <p>⚙️ <b>Memproses data tanah...</b> Mohon tunggu sebentar.</p>
-    </div>
-
-    <div id="error-state" class="content-box" style="display:none; border-left:5px solid #e74c3c;">
-        <p id="error-message">❌ Gagal memuat rekomendasi.</p>
+    <div id="loading-state" class="content-box" style="text-align: center;">
+        <p>⚙️ <b>Menganalisis data tanah...</b></p>
     </div>
 
     <div id="result-wrapper"></div>
@@ -100,94 +174,57 @@
     <div id="tpl-padi" class="card-tanaman content-box">
         <div class="plant-header">
             <img src="padi.png" class="plant-image" alt="Padi"/>
-            <h3>Tanaman Padi (Oryza sativa)</h3>
+            <h3>Tanaman Padi</h3>
         </div>
-        <p class="plant-description">
-            Padi membutuhkan tanah yang dapat menahan air dengan baik (lempung) dan paparan matahari penuh.
-        </p>
-        
-        <h4 class="section-title">🌾 Tahapan Budidaya Padi</h4>
-        <div class="step-by-step">
-            <div class="step">
-                <h5>🏗️ Persiapan Lahan</h5>
-                <ul class="steps-list">
-                    <li>Bersihkan lahan dari sisa gulma dan jerami musim lalu.</li>
-                    <li>Genangi lahan selama 1 minggu agar tanah menjadi lunak.</li>
-                    <li>Bajak lahan sedalam 20cm dan ratakan hingga membentuk lumpur halus.</li>
-                    <li>Berikan pupuk organik (kompos) sebanyak 500kg/ha sebagai dasar.</li>
-                </ul>
-            </div>
-            <div class="step">
-                <h5>🌱 Pembibitan</h5>
-                <ul class="steps-list">
-                    <li>Rendam benih dalam air garam; pilih benih yang tenggelam.</li>
-                    <li>Rendam benih pilihan selama 24 jam, lalu tiriskan 24 jam hingga berkecambah.</li>
-                    <li>Semai di bedengan basah selama 18–22 hari sebelum pindah tanam.</li>
-                    <li>Pastikan bibit memiliki 3-4 helai daun yang sehat.</li>
-                </ul>
-            </div>
-            <div class="step">
-                <h5>🌾 Penanaman</h5>
-                <ul class="steps-list">
-                    <li>Tanam bibit sedalam 2–3 cm dengan posisi tegak.</li>
-                    <li>Gunakan sistem Jajar Legowo untuk sirkulasi udara optimal.</li>
-                    <li>Isi 2–3 bibit per lubang tanam untuk mengantisipasi kegagalan tumbuh.</li>
-                </ul>
-            </div>
-            <div class="step">
-                <h5>💧 Perawatan & Pemupukan</h5>
-                <ul class="steps-list">
-                    <li>Lakukan penyulaman (penggantian tanaman mati) pada hari ke-7.</li>
-                    <li>Gunakan pupuk Urea, SP-36, dan KCl pada umur 15 dan 35 HST.</li>
-                    <li>Jaga ketinggian air 2–5 cm selama fase pertumbuhan vegetatif.</li>
-                    <li>Kendalikan hama wereng dan tikus secara berkala.</li>
-                </ul>
-            </div>
-        </div>
-    </div>
+        <h4 class="section-title">🌾 Panduan Budidaya 5 Tahap</h4>
 
-    <div id="tpl-tebu" class="card-tanaman content-box">
-        <div class="plant-header">
-            <img src="tebu.png" class="plant-image" alt="Tebu"/>
-            <h3>Tanaman Tebu (Saccharum officinarum)</h3>
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h5>Pemilihan Benih</h5>
+                <ul class="steps-list">
+                    <li>Gunakan benih unggul bersertifikat (Inpari, IR64).</li>
+                    <li>Rendam benih di air garam, buang yang mengapung.</li>
+                </ul>
+            </div>
         </div>
-        <p class="plant-description">Tebu membutuhkan drainase yang sangat baik dan tanah yang kaya akan kalium.</p>
-        
-        <h4 class="section-title">🎋 Tahapan Budidaya Tebu</h4>
-        <div class="step-by-step">
-            <div class="step">
-                <h5>🏗️ Persiapan Lahan</h5>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h5>Penyemaian</h5>
                 <ul class="steps-list">
-                    <li>Lakukan pengolahan tanah hingga gembur (kedalaman 30cm).</li>
-                    <li>Buat juringan (parit tanam) dengan kedalaman 25–30 cm.</li>
-                    <li>Atur jarak antar juringan sekitar 100–120 cm.</li>
-                    <li>Taburkan kapur pertanian (Dolomit) jika pH tanah di bawah 5.5.</li>
+                    <li>Rendam benih 24 jam dan inkubasi selama 48 jam.</li>
+                    <li>Semai di bedengan selama 18-22 hari.</li>
                 </ul>
             </div>
-            <div class="step">
-                <h5>🌱 Pemilihan Bibit (Stek)</h5>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h5>Penanaman</h5>
                 <ul class="steps-list">
-                    <li>Gunakan bibit stek yang memiliki minimal 2–3 mata tunas.</li>
-                    <li>Pastikan bibit berasal dari batang umur 6–8 bulan yang sehat.</li>
-                    <li>Rendam stek dalam fungisida untuk mencegah busuk batang.</li>
-                    <li>Pilih stek dengan diameter batang yang seragam.</li>
+                    <li>Pindah tanam bibit dengan kedalaman 2-3 cm.</li>
+                    <li>Gunakan sistem Jajar Legowo untuk hasil optimal.</li>
                 </ul>
             </div>
-            <div class="step">
-                <h5>🎋 Penanaman</h5>
+        </div>
+        <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <h5>Pemeliharaan</h5>
                 <ul class="steps-list">
-                    <li>Letakkan stek secara mendatar di dasar juringan secara bersambung.</li>
-                    <li>Tutup stek dengan tanah setebal 5–7 cm (jangan terlalu dalam).</li>
-                    <li>Waktu tanam ideal adalah akhir musim hujan atau awal kemarau.</li>
+                    <li>Pupuk NPK pada hari ke-15 dan ke-35.</li>
+                    <li>Jaga ketinggian air dan bersihkan gulma secara rutin.</li>
                 </ul>
             </div>
-            <div class="step">
-                <h5>💧 Perawatan</h5>
+        </div>
+        <div class="step">
+            <div class="step-number">5</div>
+            <div class="step-content">
+                <h5>Panen</h5>
                 <ul class="steps-list">
-                    <li>Lakukan pembumbunan (menimbun pangkal batang) agar tidak roboh.</li>
-                    <li>Lakukan "Klentek" atau pembuangan daun kering secara rutin.</li>
-                    <li>Berikan pupuk majemuk (NPK) tinggi Nitrogen di awal pertumbuhan.</li>
-                    <li>Pastikan ketersediaan air cukup pada fase pertunasan (1–3 bulan pertama).</li>
+                    <li>Panen saat 95% malai padi sudah menguning merata.</li>
+                    <li>Potong pangkal malai dan segera lakukan perontokan.</li>
                 </ul>
             </div>
         </div>
@@ -196,119 +233,174 @@
     <div id="tpl-jagung" class="card-tanaman content-box">
         <div class="plant-header">
             <img src="jagung.jpeg" class="plant-image" alt="Jagung"/>
-            <h3>Tanaman Jagung (Zea mays)</h3>
+            <h3>Tanaman Jagung</h3>
         </div>
-        <p class="plant-description">Jagung sangat sensitif terhadap genangan air namun butuh kelembapan konsisten.</p>
-        
-        <h4 class="section-title">🌽 Tahapan Budidaya Jagung</h4>
-        <div class="step-by-step">
-            <div class="step">
-                <h5>🏗️ Persiapan Lahan</h5>
+        <h4 class="section-title">🌽 Panduan Budidaya 5 Tahap</h4>
+
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h5>Pemilihan Benih</h5>
                 <ul class="steps-list">
-                    <li>Gemburkan tanah dan buat bedengan setinggi 20cm jika lahan rawan genangan.</li>
-                    <li>Campurkan pupuk kandang atau kompos sebagai pupuk dasar.</li>
-                    <li>Pastikan lahan bersih dari sisa akar tanaman sebelumnya (mencegah jamur).</li>
+                    <li>Pilih varietas hibrida tahan penyakit bulai.</li>
+                    <li>Pastikan benih memiliki persentase tumbuh >90%.</li>
                 </ul>
             </div>
-            <div class="step">
-                <h5>🌱 Benih</h5>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h5>Penyemaian</h5>
                 <ul class="steps-list">
-                    <li>Gunakan benih hibrida yang memiliki potensi hasil tinggi.</li>
-                    <li>Pastikan benih sudah melalui perlakuan (seed treatment) fungisida warna merah/merah muda.</li>
-                    <li>Pilih benih yang memiliki daya kecambah minimal 90%.</li>
+                    <li>Tanam langsung di lahan atau gunakan tray semai.</li>
+                    <li>Pastikan media semai kaya akan nutrisi organik.</li>
                 </ul>
             </div>
-            <div class="step">
-                <h5>🌽 Penanaman</h5>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h5>Penanaman</h5>
                 <ul class="steps-list">
-                    <li>Tanam dengan teknik tugal (lubang) sedalam 3–5 cm.</li>
-                    <li>Isi 1 biji per lubang tanam dengan jarak 75x20 cm.</li>
-                    <li>Tutup lubang dengan tanah tipis atau abu sekam (jangan dipadatkan).</li>
+                    <li>Tanam sedalam 5cm dengan jarak tanam 75x20 cm.</li>
+                    <li>Isi satu lubang tanam dengan satu benih jagung.</li>
                 </ul>
             </div>
-            <div class="step">
-                <h5>💧 Perawatan & Panen</h5>
+        </div>
+        <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <h5>Pemeliharaan</h5>
                 <ul class="steps-list">
-                    <li>Lakukan penyiangan gulma pada umur 2 minggu dan 4 minggu.</li>
-                    <li>Berikan pupuk susulan pada hari ke-15 (Urea) dan hari ke-35 (NPK).</li>
-                    <li>Siram rutin jika tidak ada hujan, terutama saat fase pembungaan.</li>
-                    <li>Panen saat klobot (kulit jagung) sudah mengering dan biji terasa keras.</li>
+                    <li>Lakukan pembumbunan tanah pada pangkal batang.</li>
+                    <li>Berikan pupuk Urea/NPK agar batang kokoh.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">5</div>
+            <div class="step-content">
+                <h5>Panen</h5>
+                <ul class="steps-list">
+                    <li>Panen saat klobot mengering dan biji terasa keras.</li>
+                    <li>Pastikan muncul titik hitam (black layer) di biji.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="tpl-tebu" class="card-tanaman content-box">
+        <div class="plant-header">
+            <img src="tebu.png" class="plant-image" alt="Tebu"/>
+            <h3>Tanaman Tebu</h3>
+        </div>
+        <h4 class="section-title">🎋 Panduan Budidaya 5 Tahap</h4>
+
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h5>Pemilihan Benih</h5>
+                <ul class="steps-list">
+                    <li>Gunakan bibit stek dari batang muda (6-8 bulan).</li>
+                    <li>Pilih stek yang memiliki 2-3 mata tunas aktif.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h5>Penyemaian</h5>
+                <ul class="steps-list">
+                    <li>Semai stek di bedengan datar secara bersambung.</li>
+                    <li>Lakukan penyiraman rutin hingga tunas muncul merata.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h5>Penanaman</h5>
+                <ul class="steps-list">
+                    <li>Pindahkan ke juringan sedalam 25 cm.</li>
+                    <li>Tutup stek dengan tanah tipis agar tunas mudah keluar.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <h5>Pemeliharaan</h5>
+                <ul class="steps-list">
+                    <li>Lakukan klentek (pembuangan daun kering) berkala.</li>
+                    <li>Waspadai hama penggerek batang dan penyakit karat.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">5</div>
+            <div class="step-content">
+                <h5>Panen</h5>
+                <ul class="steps-list">
+                    <li>Tebang tebu saat rendemen gula mencapai maksimal.</li>
+                    <li>Potong serapat mungkin dengan tanah (pangkal manis).</li>
                 </ul>
             </div>
         </div>
     </div>
 
     <div class="action-buttons">
-        <a href="beranda.html" class="btn btn-primary btn-large">Selesai / Kembali ke Beranda</a>
+        <a href="beranda.html" class="btn-large">Selesai / Kembali ke Beranda</a>
     </div>
 </main>
 
-<footer class="footer">© 2025 PlantAdvisor</footer>
-
 <script>
-const API_BASE_URL = "http://plantadvisor.cloud/api";
+    const API_BASE_URL = "http://plantadvisor.cloud/api";
 
-document.addEventListener("DOMContentLoaded", () => {
-    fetchRecommendation();
-    updateHeaderButtons();
-});
-
-async function fetchRecommendation() {
-    const inputId = localStorage.getItem("input_id");
-    if (!inputId) return;
-
-    const token = localStorage.getItem("token");
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-    const res = await fetch(`${API_BASE_URL}/recommendation/${inputId}`, { headers });
-    const result = await res.json();
-
-    document.getElementById("loading-state").style.display = "none";
-
-    if (res.ok && result.recommendations) {
-        renderCards(result.recommendations);
-    }
-}
-
-function renderCards(data) {
-    const wrapper = document.getElementById("result-wrapper");
-    wrapper.innerHTML = "";
-
-    data.forEach(item => {
-        const name = item.nama_tanaman.toLowerCase();
-        let id = name.includes("padi") ? "tpl-padi" :
-                 name.includes("tebu") ? "tpl-tebu" :
-                 name.includes("jagung") ? "tpl-jagung" : null;
-        if (!id) return;
-
-        const clone = document.getElementById(id).cloneNode(true);
-        clone.removeAttribute("id");
-        clone.style.display = "block";
-
-        const reason = document.createElement("div");
-        reason.className = "plant-description";
-        reason.style.background = "#f9fbe7"; // Latar belakang disesuaikan agar cocok dengan hijau baru
-        reason.style.padding = "10px";
-        reason.style.borderLeft = "4px solid #c0d633"; // Warna border diubah menjadi #c0d633
-        reason.innerHTML = `<strong>Ensiklopedia</strong><br>${item.care_instructions.replace(/\n/g,"<br>")}`;
-
-        clone.insertBefore(reason, clone.querySelector(".section-title"));
-        wrapper.appendChild(clone);
+    document.addEventListener("DOMContentLoaded", () => {
+        fetchRecommendation();
     });
-}
 
-function updateHeaderButtons() {
-    const el = document.getElementById("headerButtons");
-    el.innerHTML = localStorage.getItem("token")
-        ? `<a href="#" class="btn btn-logout" onclick="logout(event)">Logout</a>`
-        : `<a href="login.html" class="btn btn-primary">Login</a>`;
-}
+    async function fetchRecommendation() {
+        const inputId = localStorage.getItem("input_id");
+        if (!inputId) return;
 
-function logout(e){
-    e.preventDefault();
-    localStorage.clear();
-    location.href = "beranda.html";
-}
+        try {
+            const res = await fetch(`${API_BASE_URL}/recommendation/${inputId}`);
+            const result = await res.json();
+            
+            document.getElementById("loading-state").style.display = "none";
+            
+            if (res.ok && result.recommendations) {
+                renderCards(result.recommendations);
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    function renderCards(data) {
+        const wrapper = document.getElementById("result-wrapper");
+        wrapper.innerHTML = "";
+        
+        data.forEach(item => {
+            const name = item.nama_tanaman.toLowerCase();
+            let id = name.includes("padi") ? "tpl-padi" :
+                     name.includes("tebu") ? "tpl-tebu" : 
+                     name.includes("jagung") ? "tpl-jagung" : null;
+            
+            if (!id) return;
+
+            const clone = document.getElementById(id).cloneNode(true);
+            clone.removeAttribute("id");
+            clone.style.display = "block";
+
+            // Tambahkan Box Analisis dari Database
+            const analysis = document.createElement("div");
+            analysis.className = "analysis-box";
+            analysis.innerHTML = `<b>💡 Analisis PlantAdvisor:</b><br>${item.care_instructions.replace(/\n/g,"<br>")}`;
+
+            clone.insertBefore(analysis, clone.querySelector(".section-title"));
+            wrapper.appendChild(clone);
+        });
+    }
 </script>
 </body>
 </html>
