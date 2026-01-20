@@ -160,10 +160,32 @@
 </head>
 
 <body>
-<header class="main-header">
+ <header class="main-header">
     <div class="logo">PlantAdvisor</div>
-    <div class="header-buttons" id="headerButtons"></div>
-</header>
+    <nav class="main-nav">
+        <a href="#">Beranda</a>
+        <a href="#tutorial">Tutorial</a>
+        <a href="#footer">Tentang Kami</a>
+    </nav>
+    <div class="header-buttons">
+        
+        <div style="position: relative;">
+            <span class="username-display hidden-btn" id="usernameDisplay"></span>
+            
+            <div class="profile-popup" id="profilePopup">
+                <div class="profile-info">
+                    <strong><span id="popupUsername"></span></strong>
+                    <p>Email:</p>
+                    <p class="email-text" id="popupEmail"></p>
+                </div>
+                <div class="loading-state hidden-btn" id="popupLoading">Mengambil data...</div>
+            </div>
+        </div>
+        <a href="#AII" class="btn btn-primary">Coba AI</a>
+        <a href="login.html" class="btn btn-outline" id="loginBtn">Login</a>
+        <a href="#" class="btn btn-logout hidden-btn" id="logoutBtn">Logout</a>
+    </div>
+    </header>
 <main class="container-detail">
     <h2 class="page-title" style="font-weight: 800; margin-bottom: 30px;">
         <a href="beranda.html" style="text-decoration: none; color: #334155;">&lt;</a> Hasil Rekomendasi
