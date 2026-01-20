@@ -10,13 +10,11 @@
 
     <style>
         .card-tanaman { display: none; }
-
         .container-detail {
             max-width: 900px;
             margin: 40px auto;
             padding: 20px;
         }
-
         #loading-state, #error-state {
             text-align: center;
             padding: 40px;
@@ -42,46 +40,151 @@
         <p>⚙️ <b>Memproses data tanah...</b> Mohon tunggu sebentar.</p>
     </div>
 
-    <div id="error-state" class="content-box" style="display:none; border-left: 5px solid #e74c3c;">
+    <div id="error-state" class="content-box" style="display:none; border-left:5px solid #e74c3c;">
         <p id="error-message">❌ Gagal memuat rekomendasi.</p>
     </div>
 
     <div id="result-wrapper"></div>
 
-    <!-- TEMPLATE PADI -->
+    <!-- ================= TEMPLATE PADI ================= -->
     <div id="tpl-padi" class="card-tanaman content-box">
         <div class="plant-header">
             <img src="padi.png" class="plant-image"/>
             <h3>Tanaman Padi</h3>
         </div>
         <p class="plant-description">
-            Padi merupakan tanaman pangan utama di Indonesia yang membutuhkan lahan tergenang air.
+            Padi merupakan tanaman pangan utama di Indonesia yang menghasilkan beras dan membutuhkan
+            lahan tergenang air pada fase awal pertumbuhan.
         </p>
         <h4 class="section-title">🌾 Cara Menanam Padi</h4>
+        <div class="step-by-step">
+            <div class="tanpa-list-style step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h5>Pemilihan Benih</h5>
+                    <ul>
+                        <li>Gunakan benih unggul bersertifikat.</li>
+                        <li>Rendam benih selama 24 jam.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="tanpa-list-style step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h5>Penyemaian</h5>
+                    <ul>
+                        <li>Siapkan lahan semai basah.</li>
+                        <li>Tebar benih secara merata.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="tanpa-list-style step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h5>Penanaman</h5>
+                    <ul>
+                        <li>Pindahkan bibit umur 20 hari.</li>
+                        <li>Gunakan jarak tanam 25x25 cm.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="tanpa-list-style step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h5>Pemeliharaan</h5>
+                    <ul>
+                        <li>Atur irigasi air.</li>
+                        <li>Pemupukan urea berkala.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="tanpa-list-style step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <h5>Panen</h5>
+                    <ul>
+                        <li>Panen umur 3–4 bulan.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- TEMPLATE TEBU -->
+    <!-- ================= TEMPLATE TEBU ================= -->
     <div id="tpl-tebu" class="card-tanaman content-box">
         <div class="plant-header">
             <img src="tebu.png" class="plant-image"/>
             <h3>Tanaman Tebu</h3>
         </div>
         <p class="plant-description">
-            Tebu adalah bahan baku utama pembuatan gula dan membutuhkan sinar matahari penuh.
+            Tebu merupakan bahan baku utama gula dan membutuhkan sinar matahari penuh.
         </p>
         <h4 class="section-title">🎋 Cara Menanam Tebu</h4>
+        <div class="step-by-step">
+            <div class="tanpa-list-style step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h5>Benih</h5>
+                    <ul><li>Gunakan stek batang sehat.</li></ul>
+                </div>
+            </div>
+            <div class="tanpa-list-style step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h5>Penanaman</h5>
+                    <ul><li>Buat juringan 20–30 cm.</li></ul>
+                </div>
+            </div>
+            <div class="tanpa-list-style step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h5>Pemeliharaan</h5>
+                    <ul><li>Pembumbunan rutin.</li></ul>
+                </div>
+            </div>
+            <div class="tanpa-list-style step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h5>Panen</h5>
+                    <ul><li>Umur 10–12 bulan.</li></ul>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- TEMPLATE JAGUNG -->
+    <!-- ================= TEMPLATE JAGUNG ================= -->
     <div id="tpl-jagung" class="card-tanaman content-box">
         <div class="plant-header">
             <img src="jagung.png" class="plant-image"/>
             <h3>Tanaman Jagung</h3>
         </div>
         <p class="plant-description">
-            Jagung merupakan tanaman palawija yang mudah dibudidayakan.
+            Jagung merupakan tanaman palawija serbaguna.
         </p>
         <h4 class="section-title">🌽 Cara Menanam Jagung</h4>
+        <div class="step-by-step">
+            <div class="tanpa-list-style step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h5>Benih</h5>
+                    <ul><li>Gunakan benih hibrida.</li></ul>
+                </div>
+            </div>
+            <div class="tanpa-list-style step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h5>Penanaman</h5>
+                    <ul><li>Tugal sedalam 3–5 cm.</li></ul>
+                </div>
+            </div>
+            <div class="tanpa-list-style step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h5>Panen</h5>
+                    <ul><li>Umur ±3 bulan.</li></ul>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="action-buttons">
@@ -89,12 +192,10 @@
     </div>
 </main>
 
-<footer class="footer">
-    © 2025 PlantAdvisor. All rights reserved.
-</footer>
+<footer class="footer">© 2025 PlantAdvisor</footer>
 
 <script>
-const API_BASE_URL = 'http://plantadvisor.cloud/api'; 
+const API_BASE_URL = "http://plantadvisor.cloud/api";
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchRecommendation();
@@ -103,33 +204,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function fetchRecommendation() {
     const inputId = localStorage.getItem("input_id");
-    const loadingState = document.getElementById("loading-state");
-    const errorState = document.getElementById("error-state");
+    if (!inputId) return;
 
-    if (!inputId) {
-        loadingState.innerHTML = "❌ Data input tidak ditemukan.";
-        return;
-    }
+    const token = localStorage.getItem("token");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-    try {
-        const token = localStorage.getItem("token");
-        const headers = token ? { "Authorization": `Bearer ${token}` } : {};
+    const res = await fetch(`${API_BASE_URL}/recommendation/${inputId}`, { headers });
+    const result = await res.json();
 
-        const response = await fetch(`${API_BASE_URL}/recommendation/${inputId}`, { headers });
-        const result = await response.json();
+    document.getElementById("loading-state").style.display = "none";
 
-        loadingState.style.display = "none";
-
-        if (response.ok && result.recommendations) {
-            renderCards(result.recommendations);
-        } else {
-            throw new Error(result.message || "Gagal mengambil rekomendasi.");
-        }
-
-    } catch (err) {
-        loadingState.style.display = "none";
-        errorState.style.display = "block";
-        document.getElementById("error-message").innerText = err.message;
+    if (res.ok && result.recommendations) {
+        renderCards(result.recommendations);
     }
 }
 
@@ -139,48 +225,38 @@ function renderCards(data) {
 
     data.forEach(item => {
         const name = item.nama_tanaman.toLowerCase();
-        let tplId = "";
+        let id = name.includes("padi") ? "tpl-padi" :
+                 name.includes("tebu") ? "tpl-tebu" :
+                 name.includes("jagung") ? "tpl-jagung" : null;
+        if (!id) return;
 
-        if (name.includes("padi")) tplId = "tpl-padi";
-        else if (name.includes("tebu")) tplId = "tpl-tebu";
-        else if (name.includes("jagung")) tplId = "tpl-jagung";
-
-        if (!tplId) return;
-
-        const template = document.getElementById(tplId);
-        const clone = template.cloneNode(true);
+        const clone = document.getElementById(id).cloneNode(true);
+        clone.removeAttribute("id");
+        clone.style.display = "block";
 
         const reason = document.createElement("div");
         reason.className = "plant-description";
         reason.style.background = "#eefaf2";
         reason.style.padding = "10px";
-        reason.style.borderRadius = "8px";
         reason.style.borderLeft = "4px solid #27ae60";
         reason.innerHTML = `<strong>💡 Rekomendasi Sistem:</strong><br>${item.care_instructions.replace(/\n/g,"<br>")}`;
 
-        clone.style.display = "block";
         clone.insertBefore(reason, clone.querySelector(".section-title"));
         wrapper.appendChild(clone);
     });
 }
 
 function updateHeaderButtons() {
-    const headerButtons = document.getElementById("headerButtons");
-    const token = localStorage.getItem("token");
-
-    if (token) {
-        headerButtons.innerHTML =
-            `<a href="#" class="btn btn-logout" onclick="handleLogout(event)">Logout</a>`;
-    } else {
-        headerButtons.innerHTML =
-            `<a href="login.html" class="btn btn-primary">Login</a>`;
-    }
+    const el = document.getElementById("headerButtons");
+    el.innerHTML = localStorage.getItem("token")
+        ? `<a href="#" class="btn btn-logout" onclick="logout(event)">Logout</a>`
+        : `<a href="login.html" class="btn btn-primary">Login</a>`;
 }
 
-function handleLogout(e) {
+function logout(e){
     e.preventDefault();
     localStorage.clear();
-    window.location.href = "beranda.html";
+    location.href = "beranda.html";
 }
 </script>
 </body>
