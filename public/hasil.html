@@ -75,7 +75,7 @@
             margin-bottom: 15px;
             display: flex;
             gap: 20px;
-            border-left: 6px solid #a4b924;
+            border-left: 6px solid #9daf29;
             transition: transform 0.2s ease;
         }
 
@@ -84,7 +84,7 @@
         }
 
         .step-number {
-            background: #a4b924;
+            background: #9daf29;
             color: #fff;
             width: 35px;
             height: 35px;
@@ -95,7 +95,7 @@
             font-weight: 800;
             flex-shrink: 0;
             font-size: 14px;
-            box-shadow: 0 4px 10px ;
+            box-shadow: 0 4px 10px #9daf29;
         }
 
         .step-content h5 {
@@ -160,32 +160,10 @@
 </head>
 
 <body>
- <header class="main-header">
+<header class="main-header">
     <div class="logo">PlantAdvisor</div>
-    <nav class="main-nav">
-        <a href="#">Beranda</a>
-        <a href="#tutorial">Tutorial</a>
-        <a href="#footer">Tentang Kami</a>
-    </nav>
-    <div class="header-buttons">
-        
-        <div style="position: relative;">
-            <span class="username-display hidden-btn" id="usernameDisplay"></span>
-            
-            <div class="profile-popup" id="profilePopup">
-                <div class="profile-info">
-                    <strong><span id="popupUsername"></span></strong>
-                    <p>Email:</p>
-                    <p class="email-text" id="popupEmail"></p>
-                </div>
-                <div class="loading-state hidden-btn" id="popupLoading">Mengambil data...</div>
-            </div>
-        </div>
-        <a href="#AII" class="btn btn-primary">Coba AI</a>
-        <a href="login.html" class="btn btn-outline" id="loginBtn">Login</a>
-        <a href="#" class="btn btn-logout hidden-btn" id="logoutBtn">Logout</a>
-    </div>
-    </header>
+    <div class="header-buttons" id="headerButtons"></div>
+</header>
 <main class="container-detail">
     <h2 class="page-title" style="font-weight: 800; margin-bottom: 30px;">
         <a href="beranda.html" style="text-decoration: none; color: #334155;">&lt;</a> Hasil Rekomendasi
