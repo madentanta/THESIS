@@ -20,50 +20,56 @@
             padding: 40px;
         }
         .steps-list {
-    list-style-type: none;
-    padding-left: 0;
-    margin-bottom: 25px;
-}
+            list-style-type: none;
+            padding-left: 0;
+            margin-bottom: 25px;
+        }
 
-.steps-list li {
-    position: relative;
-    padding-left: 25px;
-    margin-bottom: 8px;
-    line-height: 1.6;
-    color: #444;
-}
+        .steps-list li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 8px;
+            line-height: 1.6;
+            color: #444;
+        }
 
-.steps-list li::before {
-    content: "✔️";
-    position: absolute;
-    left: 0;
-    color: #27ae60;
-    font-size: 14px;
-}
+        .steps-list li::before {
+            content: "✔️";
+            position: absolute;
+            left: 0;
+            color: #c0d633; /* Warna diubah menjadi hijau target */
+            font-size: 14px;
+        }
 
-.section-title {
-    margin-top: 20px;
-    color: #2c3e50;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 5px;
-}
-.step {
-    margin-bottom: 20px;
-}
-.step h5 {
-    margin-bottom: 8px;
-    color: #27ae60;
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-.steps-list {
-    margin-bottom: 15px !important;
-}
-.steps-list li {
-    font-size: 0.95rem;
-    color: #555;
-    margin-bottom: 5px;
-}
+        .section-title {
+            margin-top: 20px;
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+        .step {
+            margin-bottom: 20px;
+        }
+        .step h5 {
+            margin-bottom: 8px;
+            color: #c0d633; /* Warna diubah menjadi hijau target */
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .steps-list {
+            margin-bottom: 15px !important;
+        }
+        .steps-list li {
+            font-size: 0.95rem;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        /* Menambahkan gaya untuk tombol utama agar selaras dengan warna baru */
+        .btn-primary {
+            background-color: #c0d633 !important;
+            border-color: #c0d633 !important;
+            color: #fff;
+        }
     </style>
 </head>
 
@@ -91,146 +97,147 @@
 
     <div id="result-wrapper"></div>
 
-       <div id="tpl-padi" class="card-tanaman content-box">
-    <div class="plant-header">
-        <img src="padi.png" class="plant-image" alt="Padi"/>
-        <h3>Tanaman Padi (Oryza sativa)</h3>
+    <div id="tpl-padi" class="card-tanaman content-box">
+        <div class="plant-header">
+            <img src="padi.png" class="plant-image" alt="Padi"/>
+            <h3>Tanaman Padi (Oryza sativa)</h3>
+        </div>
+        <p class="plant-description">
+            Padi membutuhkan tanah yang dapat menahan air dengan baik (lempung) dan paparan matahari penuh.
+        </p>
+        
+        <h4 class="section-title">🌾 Tahapan Budidaya Padi</h4>
+        <div class="step-by-step">
+            <div class="step">
+                <h5>🏗️ Persiapan Lahan</h5>
+                <ul class="steps-list">
+                    <li>Bersihkan lahan dari sisa gulma dan jerami musim lalu.</li>
+                    <li>Genangi lahan selama 1 minggu agar tanah menjadi lunak.</li>
+                    <li>Bajak lahan sedalam 20cm dan ratakan hingga membentuk lumpur halus.</li>
+                    <li>Berikan pupuk organik (kompos) sebanyak 500kg/ha sebagai dasar.</li>
+                </ul>
+            </div>
+            <div class="step">
+                <h5>🌱 Pembibitan</h5>
+                <ul class="steps-list">
+                    <li>Rendam benih dalam air garam; pilih benih yang tenggelam.</li>
+                    <li>Rendam benih pilihan selama 24 jam, lalu tiriskan 24 jam hingga berkecambah.</li>
+                    <li>Semai di bedengan basah selama 18–22 hari sebelum pindah tanam.</li>
+                    <li>Pastikan bibit memiliki 3-4 helai daun yang sehat.</li>
+                </ul>
+            </div>
+            <div class="step">
+                <h5>🌾 Penanaman</h5>
+                <ul class="steps-list">
+                    <li>Tanam bibit sedalam 2–3 cm dengan posisi tegak.</li>
+                    <li>Gunakan sistem Jajar Legowo untuk sirkulasi udara optimal.</li>
+                    <li>Isi 2–3 bibit per lubang tanam untuk mengantisipasi kegagalan tumbuh.</li>
+                </ul>
+            </div>
+            <div class="step">
+                <h5>💧 Perawatan & Pemupukan</h5>
+                <ul class="steps-list">
+                    <li>Lakukan penyulaman (penggantian tanaman mati) pada hari ke-7.</li>
+                    <li>Gunakan pupuk Urea, SP-36, dan KCl pada umur 15 dan 35 HST.</li>
+                    <li>Jaga ketinggian air 2–5 cm selama fase pertumbuhan vegetatif.</li>
+                    <li>Kendalikan hama wereng dan tikus secara berkala.</li>
+                </ul>
+            </div>
+        </div>
     </div>
-    <p class="plant-description">
-        Padi membutuhkan tanah yang dapat menahan air dengan baik (lempung) dan paparan matahari penuh.
-    </p>
-    
-    <h4 class="section-title">🌾 Tahapan Budidaya Padi</h4>
-    <div class="step-by-step">
-        <div class="step">
-            <h5>🏗️ Persiapan Lahan</h5>
-            <ul class="steps-list">
-                <li>Bersihkan lahan dari sisa gulma dan jerami musim lalu.</li>
-                <li>Genangi lahan selama 1 minggu agar tanah menjadi lunak.</li>
-                <li>Bajak lahan sedalam 20cm dan ratakan hingga membentuk lumpur halus.</li>
-                <li>Berikan pupuk organik (kompos) sebanyak 500kg/ha sebagai dasar.</li>
-            </ul>
-        </div>
-        <div class="step">
-            <h5>🌱 Pembibitan</h5>
-            <ul class="steps-list">
-                <li>Rendam benih dalam air garam; pilih benih yang tenggelam.</li>
-                <li>Rendam benih pilihan selama 24 jam, lalu tiriskan 24 jam hingga berkecambah.</li>
-                <li>Semai di bedengan basah selama 18–22 hari sebelum pindah tanam.</li>
-                <li>Pastikan bibit memiliki 3-4 helai daun yang sehat.</li>
-            </ul>
-        </div>
-        <div class="step">
-            <h5>🌾 Penanaman</h5>
-            <ul class="steps-list">
-                <li>Tanam bibit sedalam 2–3 cm dengan posisi tegak.</li>
-                <li>Gunakan sistem Jajar Legowo untuk sirkulasi udara optimal.</li>
-                <li>Isi 2–3 bibit per lubang tanam untuk mengantisipasi kegagalan tumbuh.</li>
-            </ul>
-        </div>
-        <div class="step">
-            <h5>💧 Perawatan & Pemupukan</h5>
-            <ul class="steps-list">
-                <li>Lakukan penyulaman (penggantian tanaman mati) pada hari ke-7.</li>
-                <li>Gunakan pupuk Urea, SP-36, dan KCl pada umur 15 dan 35 HST.</li>
-                <li>Jaga ketinggian air 2–5 cm selama fase pertumbuhan vegetatif.</li>
-                <li>Kendalikan hama wereng dan tikus secara berkala.</li>
-            </ul>
-        </div>
-    </div>
-</div>
 
-<div id="tpl-tebu" class="card-tanaman content-box">
-    <div class="plant-header">
-        <img src="tebu.png" class="plant-image" alt="Tebu"/>
-        <h3>Tanaman Tebu (Saccharum officinarum)</h3>
+    <div id="tpl-tebu" class="card-tanaman content-box">
+        <div class="plant-header">
+            <img src="tebu.png" class="plant-image" alt="Tebu"/>
+            <h3>Tanaman Tebu (Saccharum officinarum)</h3>
+        </div>
+        <p class="plant-description">Tebu membutuhkan drainase yang sangat baik dan tanah yang kaya akan kalium.</p>
+        
+        <h4 class="section-title">🎋 Tahapan Budidaya Tebu</h4>
+        <div class="step-by-step">
+            <div class="step">
+                <h5>🏗️ Persiapan Lahan</h5>
+                <ul class="steps-list">
+                    <li>Lakukan pengolahan tanah hingga gembur (kedalaman 30cm).</li>
+                    <li>Buat juringan (parit tanam) dengan kedalaman 25–30 cm.</li>
+                    <li>Atur jarak antar juringan sekitar 100–120 cm.</li>
+                    <li>Taburkan kapur pertanian (Dolomit) jika pH tanah di bawah 5.5.</li>
+                </ul>
+            </div>
+            <div class="step">
+                <h5>🌱 Pemilihan Bibit (Stek)</h5>
+                <ul class="steps-list">
+                    <li>Gunakan bibit stek yang memiliki minimal 2–3 mata tunas.</li>
+                    <li>Pastikan bibit berasal dari batang umur 6–8 bulan yang sehat.</li>
+                    <li>Rendam stek dalam fungisida untuk mencegah busuk batang.</li>
+                    <li>Pilih stek dengan diameter batang yang seragam.</li>
+                </ul>
+            </div>
+            <div class="step">
+                <h5>🎋 Penanaman</h5>
+                <ul class="steps-list">
+                    <li>Letakkan stek secara mendatar di dasar juringan secara bersambung.</li>
+                    <li>Tutup stek dengan tanah setebal 5–7 cm (jangan terlalu dalam).</li>
+                    <li>Waktu tanam ideal adalah akhir musim hujan atau awal kemarau.</li>
+                </ul>
+            </div>
+            <div class="step">
+                <h5>💧 Perawatan</h5>
+                <ul class="steps-list">
+                    <li>Lakukan pembumbunan (menimbun pangkal batang) agar tidak roboh.</li>
+                    <li>Lakukan "Klentek" atau pembuangan daun kering secara rutin.</li>
+                    <li>Berikan pupuk majemuk (NPK) tinggi Nitrogen di awal pertumbuhan.</li>
+                    <li>Pastikan ketersediaan air cukup pada fase pertunasan (1–3 bulan pertama).</li>
+                </ul>
+            </div>
+        </div>
     </div>
-    <p class="plant-description">Tebu membutuhkan drainase yang sangat baik dan tanah yang kaya akan kalium.</p>
-    
-    <h4 class="section-title">🎋 Tahapan Budidaya Tebu</h4>
-    <div class="step-by-step">
-        <div class="step">
-            <h5>🏗️ Persiapan Lahan</h5>
-            <ul class="steps-list">
-                <li>Lakukan pengolahan tanah hingga gembur (kedalaman 30cm).</li>
-                <li>Buat juringan (parit tanam) dengan kedalaman 25–30 cm.</li>
-                <li>Atur jarak antar juringan sekitar 100–120 cm.</li>
-                <li>Taburkan kapur pertanian (Dolomit) jika pH tanah di bawah 5.5.</li>
-            </ul>
-        </div>
-        <div class="step">
-            <h5>🌱 Pemilihan Bibit (Stek)</h5>
-            <ul class="steps-list">
-                <li>Gunakan bibit stek yang memiliki minimal 2–3 mata tunas.</li>
-                <li>Pastikan bibit berasal dari batang umur 6–8 bulan yang sehat.</li>
-                <li>Rendam stek dalam fungisida untuk mencegah busuk batang.</li>
-                <li>Pilih stek dengan diameter batang yang seragam.</li>
-            </ul>
-        </div>
-        <div class="step">
-            <h5>🎋 Penanaman</h5>
-            <ul class="steps-list">
-                <li>Letakkan stek secara mendatar di dasar juringan secara bersambung.</li>
-                <li>Tutup stek dengan tanah setebal 5–7 cm (jangan terlalu dalam).</li>
-                <li>Waktu tanam ideal adalah akhir musim hujan atau awal kemarau.</li>
-            </ul>
-        </div>
-        <div class="step">
-            <h5>💧 Perawatan</h5>
-            <ul class="steps-list">
-                <li>Lakukan pembumbunan (menimbun pangkal batang) agar tidak roboh.</li>
-                <li>Lakukan "Klentek" atau pembuangan daun kering secara rutin.</li>
-                <li>Berikan pupuk majemuk (NPK) tinggi Nitrogen di awal pertumbuhan.</li>
-                <li>Pastikan ketersediaan air cukup pada fase pertunasan (1–3 bulan pertama).</li>
-            </ul>
-        </div>
-    </div>
-</div>
 
-<div id="tpl-jagung" class="card-tanaman content-box">
-    <div class="plant-header">
-        <img src="jagung.jpeg" class="plant-image" alt="Jagung"/>
-        <h3>Tanaman Jagung (Zea mays)</h3>
+    <div id="tpl-jagung" class="card-tanaman content-box">
+        <div class="plant-header">
+            <img src="jagung.jpeg" class="plant-image" alt="Jagung"/>
+            <h3>Tanaman Jagung (Zea mays)</h3>
+        </div>
+        <p class="plant-description">Jagung sangat sensitif terhadap genangan air namun butuh kelembapan konsisten.</p>
+        
+        <h4 class="section-title">🌽 Tahapan Budidaya Jagung</h4>
+        <div class="step-by-step">
+            <div class="step">
+                <h5>🏗️ Persiapan Lahan</h5>
+                <ul class="steps-list">
+                    <li>Gemburkan tanah dan buat bedengan setinggi 20cm jika lahan rawan genangan.</li>
+                    <li>Campurkan pupuk kandang atau kompos sebagai pupuk dasar.</li>
+                    <li>Pastikan lahan bersih dari sisa akar tanaman sebelumnya (mencegah jamur).</li>
+                </ul>
+            </div>
+            <div class="step">
+                <h5>🌱 Benih</h5>
+                <ul class="steps-list">
+                    <li>Gunakan benih hibrida yang memiliki potensi hasil tinggi.</li>
+                    <li>Pastikan benih sudah melalui perlakuan (seed treatment) fungisida warna merah/merah muda.</li>
+                    <li>Pilih benih yang memiliki daya kecambah minimal 90%.</li>
+                </ul>
+            </div>
+            <div class="step">
+                <h5>🌽 Penanaman</h5>
+                <ul class="steps-list">
+                    <li>Tanam dengan teknik tugal (lubang) sedalam 3–5 cm.</li>
+                    <li>Isi 1 biji per lubang tanam dengan jarak 75x20 cm.</li>
+                    <li>Tutup lubang dengan tanah tipis atau abu sekam (jangan dipadatkan).</li>
+                </ul>
+            </div>
+            <div class="step">
+                <h5>💧 Perawatan & Panen</h5>
+                <ul class="steps-list">
+                    <li>Lakukan penyiangan gulma pada umur 2 minggu dan 4 minggu.</li>
+                    <li>Berikan pupuk susulan pada hari ke-15 (Urea) dan hari ke-35 (NPK).</li>
+                    <li>Siram rutin jika tidak ada hujan, terutama saat fase pembungaan.</li>
+                    <li>Panen saat klobot (kulit jagung) sudah mengering dan biji terasa keras.</li>
+                </ul>
+            </div>
+        </div>
     </div>
-    <p class="plant-description">Jagung sangat sensitif terhadap genangan air namun butuh kelembapan konsisten.</p>
-    
-    <h4 class="section-title">🌽 Tahapan Budidaya Jagung</h4>
-    <div class="step-by-step">
-        <div class="step">
-            <h5>🏗️ Persiapan Lahan</h5>
-            <ul class="steps-list">
-                <li>Gemburkan tanah dan buat bedengan setinggi 20cm jika lahan rawan genangan.</li>
-                <li>Campurkan pupuk kandang atau kompos sebagai pupuk dasar.</li>
-                <li>Pastikan lahan bersih dari sisa akar tanaman sebelumnya (mencegah jamur).</li>
-            </ul>
-        </div>
-        <div class="step">
-            <h5>🌱 Benih</h5>
-            <ul class="steps-list">
-                <li>Gunakan benih hibrida yang memiliki potensi hasil tinggi.</li>
-                <li>Pastikan benih sudah melalui perlakuan (seed treatment) fungisida warna merah/merah muda.</li>
-                <li>Pilih benih yang memiliki daya kecambah minimal 90%.</li>
-            </ul>
-        </div>
-        <div class="step">
-            <h5>🌽 Penanaman</h5>
-            <ul class="steps-list">
-                <li>Tanam dengan teknik tugal (lubang) sedalam 3–5 cm.</li>
-                <li>Isi 1 biji per lubang tanam dengan jarak 75x20 cm.</li>
-                <li>Tutup lubang dengan tanah tipis atau abu sekam (jangan dipadatkan).</li>
-            </ul>
-        </div>
-        <div class="step">
-            <h5>💧 Perawatan & Panen</h5>
-            <ul class="steps-list">
-                <li>Lakukan penyiangan gulma pada umur 2 minggu dan 4 minggu.</li>
-                <li>Berikan pupuk susulan pada hari ke-15 (Urea) dan hari ke-35 (NPK).</li>
-                <li>Siram rutin jika tidak ada hujan, terutama saat fase pembungaan.</li>
-                <li>Panen saat klobot (kulit jagung) sudah mengering dan biji terasa keras.</li>
-            </ul>
-        </div>
-    </div>
-</div>
+
     <div class="action-buttons">
         <a href="beranda.html" class="btn btn-primary btn-large">Selesai / Kembali ke Beranda</a>
     </div>
@@ -280,10 +287,10 @@ function renderCards(data) {
 
         const reason = document.createElement("div");
         reason.className = "plant-description";
-        reason.style.background = "#eefaf2";
+        reason.style.background = "#f9fbe7"; // Latar belakang disesuaikan agar cocok dengan hijau baru
         reason.style.padding = "10px";
-        reason.style.borderLeft = "4px solid #27ae60";
-        reason.innerHTML = `<strong>💡 Rekomendasi Sistem:</strong><br>${item.care_instructions.replace(/\n/g,"<br>")}`;
+        reason.style.borderLeft = "4px solid #c0d633"; // Warna border diubah menjadi #c0d633
+        reason.innerHTML = `<strong>Ensiklopedia</strong><br>${item.care_instructions.replace(/\n/g,"<br>")}`;
 
         clone.insertBefore(reason, clone.querySelector(".section-title"));
         wrapper.appendChild(clone);
