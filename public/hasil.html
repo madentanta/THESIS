@@ -75,7 +75,7 @@
             margin-bottom: 15px;
             display: flex;
             gap: 20px;
-            border-left: 6px solid #a4b924;
+            border-left: 6px solid #9daf29;
             transition: transform 0.2s ease;
         }
 
@@ -84,7 +84,7 @@
         }
 
         .step-number {
-            background: #a4b924;
+            background: #9daf29;
             color: #fff;
             width: 35px;
             height: 35px;
@@ -95,7 +95,7 @@
             font-weight: 800;
             flex-shrink: 0;
             font-size: 14px;
-            box-shadow: 0 4px 10px #a4b924;
+            box-shadow: 0 4px 10px #9daf29;
         }
 
         .step-content h5 {
@@ -156,6 +156,10 @@
             font-size: 14px;
             line-height: 1.6;
         }
+        .hidden-btn {
+    display: none !important;
+}
+
     </style>
 </head>
 
@@ -172,16 +176,10 @@
         <div style="position: relative;">
             <span class="username-display hidden-btn" id="usernameDisplay"></span>
             
-            <div class="profile-popup" id="profilePopup">
-                <div class="profile-info">
-                    <strong><span id="popupUsername"></span></strong>
-                    <p>Email:</p>
-                    <p class="email-text" id="popupEmail"></p>
-                </div>
+            
                 <div class="loading-state hidden-btn" id="popupLoading">Mengambil data...</div>
             </div>
         </div>
-        <a href="#AII" class="btn btn-primary">Coba AI</a>
         <a href="login.html" class="btn btn-outline" id="loginBtn">Login</a>
         <a href="#" class="btn btn-logout hidden-btn" id="logoutBtn">Logout</a>
     </div>
@@ -383,6 +381,52 @@
 </main>
 
 <script>
+    
+document.addEventListener("DOMContentLoaded", () => {
+    handleNavbarAuth();
+});
+
+/* ==============================
+   NAVBAR LOGIN / LOGOUT LOGIC
+   ============================== */
+function handleNavbarAuth() {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const usernameDisplay = document.getElementById("usernameDisplay");
+
+    const popupUsername = document.getElementById("popupUsername");
+    const popupEmail = document.getElementById("popupEmail");
+
+    if (token && user) {
+        // Sudah login
+        loginBtn.classList.add("hidden-btn");
+        logoutBtn.classList.remove("hidden-btn");
+
+        usernameDisplay.textContent = user.username;
+        usernameDisplay.classList.remove("hidden-btn");
+
+        popupUsername.textContent = user.username;
+        popupEmail.textContent = user.email;
+    } else {
+        // Belum login
+        loginBtn.classList.remove("hidden-btn");
+        logoutBtn.classList.add("hidden-btn");
+        usernameDisplay.classList.add("hidden-btn");
+    }
+
+    // Logout
+    logoutBtn.addEventListener("click", () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("input_id");
+        window.location.href = "login.html";
+    });
+}
+
+
     const API_BASE_URL = "http://plantadvisor.cloud/api";
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -429,7 +473,9 @@
             clone.insertBefore(analysis, clone.querySelector(".section-title"));
             wrapper.appendChild(clone);
         });
+        
     }
+    
 </script>
 </body>
 </html>
