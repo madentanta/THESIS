@@ -75,7 +75,7 @@
             margin-bottom: 15px;
             display: flex;
             gap: 20px;
-            border-left: 6px solid #c1d72e;
+            border-left: 6px solid #9daf29;
             transition: transform 0.2s ease;
         }
 
@@ -84,7 +84,7 @@
         }
 
         .step-number {
-            background: #c1d72e;
+            background: #9daf29;
             color: #fff;
             width: 35px;
             height: 35px;
@@ -95,7 +95,7 @@
             font-weight: 800;
             flex-shrink: 0;
             font-size: 14px;
-            box-shadow: 0 4px 10px #c1d72e;
+            box-shadow: 0 4px 10px #9daf29;
         }
 
         .step-content h5 {
@@ -135,7 +135,7 @@
 
         .btn-large {
             padding: 18px 50px;
-            background-color: #c1d72e;
+            background-color: #9daf29;
             color: #fff;
             border-radius: 15px;
             font-weight: 700;
@@ -143,7 +143,7 @@
             display: inline-block;
             font-size: 16px;
             border: none;
-            box-shadow: 0 6px 20px #c1d72e;
+            box-shadow: 0 6px 20px #9daf29;
             cursor: pointer;
         }
 
@@ -156,14 +156,37 @@
             font-size: 14px;
             line-height: 1.6;
         }
+        .hidden-btn {
+    display: none !important;
+}
+.latin-name {
+    font-size: 0.8em;
+}
+
+
     </style>
 </head>
 
 <body>
-<header class="main-header">
+ <header class="main-header">
     <div class="logo">PlantAdvisor</div>
-    <div class="header-buttons" id="headerButtons"></div>
-</header>
+    <nav class="main-nav">
+        <a href="#">Beranda</a>
+        <a href="#footer">Tentang Kami</a>
+    </nav>
+    <div class="header-buttons">
+        
+        <div style="position: relative;">
+            <span class="username-display hidden-btn" id="usernameDisplay"></span>
+            
+            
+                <div class="loading-state hidden-btn" id="popupLoading">Mengambil data...</div>
+            </div>
+        </div>
+        <a href="login.html" class="btn btn-outline" id="loginBtn">Login</a>
+        <a href="#" class="btn btn-logout hidden-btn" id="logoutBtn">Logout</a>
+    </div>
+    </header>
 <main class="container-detail">
     <h2 class="page-title" style="font-weight: 800; margin-bottom: 30px;">
         <a href="beranda.html" style="text-decoration: none; color: #334155;">&lt;</a> Hasil Rekomendasi
@@ -298,7 +321,13 @@
     <div id="tpl-tebu" class="card-tanaman content-box">
         <div class="plant-header">
             <img src="tebu.png" class="plant-image" alt="Tebu"/>
-            <h3>Tanaman Tebu <span class="latin-name">(Saccharum officinarum)</span></h3>
+            <h3>
+                Tanaman Tebu 
+              <span class="latin-name" style="font-size: 0.8em;">
+                 (Saccharum officinarum)
+                 </span>
+            </h3>
+
 
         </div>
         <h4 class="section-title">🎋 Panduan Budidaya - Panen</h4>
@@ -361,6 +390,52 @@
 </main>
 
 <script>
+    
+document.addEventListener("DOMContentLoaded", () => {
+    handleNavbarAuth();
+});
+
+/* ==============================
+   NAVBAR LOGIN / LOGOUT LOGIC
+   ============================== */
+function handleNavbarAuth() {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const usernameDisplay = document.getElementById("usernameDisplay");
+
+    const popupUsername = document.getElementById("popupUsername");
+    const popupEmail = document.getElementById("popupEmail");
+
+    if (token && user) {
+        // Sudah login
+        loginBtn.classList.add("hidden-btn");
+        logoutBtn.classList.remove("hidden-btn");
+
+        usernameDisplay.textContent = user.username;
+        usernameDisplay.classList.remove("hidden-btn");
+
+        popupUsername.textContent = user.username;
+        popupEmail.textContent = user.email;
+    } else {
+        // Belum login
+        loginBtn.classList.remove("hidden-btn");
+        logoutBtn.classList.add("hidden-btn");
+        usernameDisplay.classList.add("hidden-btn");
+    }
+
+    // Logout
+    logoutBtn.addEventListener("click", () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("input_id");
+        window.location.href = "login.html";
+    });
+}
+
+
     const API_BASE_URL = "http://plantadvisor.cloud/api";
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -407,7 +482,9 @@
             clone.insertBefore(analysis, clone.querySelector(".section-title"));
             wrapper.appendChild(clone);
         });
+        
     }
+    
 </script>
 </body>
 </html>
