@@ -136,7 +136,7 @@
         .btn-large {
             padding: 18px 50px;
             background-color: #c1d72e;
-            color: #fff;
+            color: black;
             border-radius: 15px;
             font-weight: 700;
             text-decoration: none;
@@ -145,6 +145,10 @@
             border: none;
             cursor: pointer;
         }
+        .btn-large:hover {
+             background-color: #9fb22b;
+            transform: translateY(-2px);
+}
 
         .analysis-box {
             background: #f9fbe7;
@@ -158,7 +162,45 @@
         .latin-name {
     font-size: 0.8em;
 }
+/* Gaya untuk Header Step yang bisa diklik */
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    cursor: pointer;
+    width: 100%;
+}
 
+/* Sembunyikan konten secara default */
+.step-content {
+    display: none;
+    padding-top: 15px;
+    padding-left: 55px; /* Menyesuaikan posisi dengan angka */
+}
+
+/* Ikon panah/dropdown */
+.step::after {
+    content: '▼';
+    font-size: 12px;
+    color: #94a3b8;
+    margin-left: auto;
+    transition: transform 0.3s ease;
+}
+
+/* Class aktif saat dropdown terbuka */
+.step.active::after {
+    transform: rotate(180deg);
+}
+
+.step.active .step-content {
+    display: block;
+}
+
+/* Penyesuaian padding step agar lebih rapi */
+.step {
+    flex-direction: column; /* Ubah ke kolom agar konten di bawah header */
+    align-items: flex-start;
+}
     </style>
 </head>
 
@@ -184,53 +226,64 @@
             <h3>Tanaman Padi <span class="latin-name">(Oryza sativa)</span></h3>
 
         </div>
+        
         <h4 class="section-title">🌾 Panduan Budidaya - Panen</h4>
 
-        <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-content">
-                <h5>Pemilihan Benih</h5>
-                <ul class="steps-list">
+        <div class="step" onclick="toggleStep(this)">
+    <div class="step-header">
+        <div class="step-number">1</div>
+        <h5>Pemilihan Benih</h5>
+    </div>
+    <div class="step-content">
+        <ul class="steps-list">
                     <li>Gunakan benih unggul bersertifikat (Inpari, IR64).</li>
                     <li>Rendam benih di air garam, buang yang mengapung.</li>
                 </ul>
             </div>
         </div>
-        <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-                <h5>Penyemaian</h5>
-                <ul class="steps-list">
+        <div class="step" onclick="toggleStep(this)">
+    <div class="step-header">
+        <div class="step-number">2</div>
+        <h5>Penyemaian</h5>
+    </div>
+    <div class="step-content">
+        <ul class="steps-list">
                     <li>Rendam benih 24 jam dan inkubasi selama 48 jam.</li>
                     <li>Semai di bedengan selama 18-22 hari.</li>
                 </ul>
             </div>
         </div>
-        <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-                <h5>Penanaman</h5>
-                <ul class="steps-list">
+        <div class="step" onclick="toggleStep(this)">
+    <div class="step-header">
+        <div class="step-number">3</div>
+        <h5>Penanaman</h5>
+    </div>
+    <div class="step-content">
+        <ul class="steps-list">
                     <li>Pindah tanam bibit dengan kedalaman 2-3 cm.</li>
                     <li>Gunakan sistem Jajar Legowo untuk hasil optimal.</li>
                 </ul>
             </div>
         </div>
-        <div class="step">
-            <div class="step-number">4</div>
-            <div class="step-content">
-                <h5>Pemeliharaan</h5>
-                <ul class="steps-list">
+        <div class="step" onclick="toggleStep(this)">
+    <div class="step-header">
+        <div class="step-number">4</div>
+        <h5>Pemeliharaan</h5>
+    </div>
+    <div class="step-content">
+        <ul class="steps-list">
                     <li>Pupuk NPK pada hari ke-15 dan ke-35.</li>
                     <li>Jaga ketinggian air dan bersihkan gulma secara rutin.</li>
                 </ul>
             </div>
         </div>
-        <div class="step">
-            <div class="step-number">5</div>
-            <div class="step-content">
-                <h5>Panen</h5>
-                <ul class="steps-list">
+        <div class="step" onclick="toggleStep(this)">
+    <div class="step-header">
+        <div class="step-number">5</div>
+        <h5>Panen</h5>
+    </div>
+    <div class="step-content">
+        <ul class="steps-list">
                     <li>Panen saat 95% malai padi sudah menguning merata.</li>
                     <li>Potong pangkal malai dan segera lakukan perontokan.</li>
                 </ul>
@@ -246,51 +299,61 @@
         </div>
         <h4 class="section-title">🌽 Panduan Budidaya - Panen</h4>
 
-        <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-content">
-                <h5>Pemilihan Benih</h5>
-                <ul class="steps-list">
+         <div class="step" onclick="toggleStep(this)">
+    <div class="step-header">
+        <div class="step-number">1</div>
+        <h5>Pemilihan Benih</h5>
+    </div>
+    <div class="step-content">
+        <ul class="steps-list">
                     <li>Pilih varietas hibrida tahan penyakit bulai.</li>
                     <li>Pastikan benih memiliki persentase tumbuh >90%.</li>
                 </ul>
             </div>
         </div>
-        <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-                <h5>Penyemaian</h5>
-                <ul class="steps-list">
+         <div class="step" onclick="toggleStep(this)">
+    <div class="step-header">
+        <div class="step-number">2</div>
+        <h5>Penyemaian</h5>
+    </div>
+    <div class="step-content">
+        <ul class="steps-list">
                     <li>Tanam langsung di lahan atau gunakan tray semai.</li>
                     <li>Pastikan media semai kaya akan nutrisi organik.</li>
                 </ul>
             </div>
         </div>
-        <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-                <h5>Penanaman</h5>
-                <ul class="steps-list">
+         <div class="step" onclick="toggleStep(this)">
+    <div class="step-header">
+        <div class="step-number">3</div>
+        <h5>Penanaman</h5>
+    </div>
+    <div class="step-content">
+        <ul class="steps-list">
                     <li>Tanam sedalam 5cm dengan jarak tanam 75x20 cm.</li>
                     <li>Isi satu lubang tanam dengan satu benih jagung.</li>
                 </ul>
             </div>
         </div>
-        <div class="step">
-            <div class="step-number">4</div>
-            <div class="step-content">
-                <h5>Pemeliharaan</h5>
-                <ul class="steps-list">
+         <div class="step" onclick="toggleStep(this)">
+    <div class="step-header">
+        <div class="step-number">4</div>
+        <h5>Pemeliharaan</h5>
+    </div>
+    <div class="step-content">
+        <ul class="steps-list">
                     <li>Lakukan pembumbunan tanah pada pangkal batang.</li>
                     <li>Berikan pupuk Urea/NPK agar batang kokoh.</li>
                 </ul>
             </div>
         </div>
-        <div class="step">
-            <div class="step-number">5</div>
-            <div class="step-content">
-                <h5>Panen</h5>
-                <ul class="steps-list">
+         <div class="step" onclick="toggleStep(this)">
+    <div class="step-header">
+        <div class="step-number">5</div>
+        <h5>Panen</h5>
+    </div>
+    <div class="step-content">
+        <ul class="steps-list">
                     <li>Panen saat klobot mengering dan biji terasa keras.</li>
                     <li>Pastikan muncul titik hitam (black layer) di biji.</li>
                 </ul>
@@ -312,51 +375,61 @@
         </div>
         <h4 class="section-title">🎋 Panduan Budidaya - Panen</h4>
 
-        <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-content">
-                <h5>Pemilihan Benih</h5>
-                <ul class="steps-list">
+         <div class="step" onclick="toggleStep(this)">
+    <div class="step-header">
+        <div class="step-number">1</div>
+        <h5>Pemilihan Benih</h5>
+    </div>
+    <div class="step-content">
+        <ul class="steps-list">
                     <li>Gunakan bibit stek dari batang muda (6-8 bulan).</li>
                     <li>Pilih stek yang memiliki 2-3 mata tunas aktif.</li>
                 </ul>
             </div>
         </div>
-        <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-                <h5>Penyemaian</h5>
-                <ul class="steps-list">
+         <div class="step" onclick="toggleStep(this)">
+    <div class="step-header">
+        <div class="step-number">2</div>
+        <h5>Penyemaian</h5>
+    </div>
+    <div class="step-content">
+        <ul class="steps-list">
                     <li>Semai stek di bedengan datar secara bersambung.</li>
                     <li>Lakukan penyiraman rutin hingga tunas muncul merata.</li>
                 </ul>
             </div>
         </div>
-        <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-                <h5>Penanaman</h5>
-                <ul class="steps-list">
+         <div class="step" onclick="toggleStep(this)">
+    <div class="step-header">
+        <div class="step-number">3</div>
+        <h5>Penanaman</h5>
+    </div>
+    <div class="step-content">
+        <ul class="steps-list">
                     <li>Pindahkan ke juringan sedalam 25 cm.</li>
                     <li>Tutup stek dengan tanah tipis agar tunas mudah keluar.</li>
                 </ul>
             </div>
         </div>
-        <div class="step">
-            <div class="step-number">4</div>
-            <div class="step-content">
-                <h5>Pemeliharaan</h5>
-                <ul class="steps-list">
+         <div class="step" onclick="toggleStep(this)">
+    <div class="step-header">
+        <div class="step-number">4</div>
+        <h5>Pemeliharaan</h5>
+    </div>
+    <div class="step-content">
+        <ul class="steps-list">
                     <li>Lakukan klentek (pembuangan daun kering) berkala.</li>
                     <li>Waspadai hama penggerek batang dan penyakit karat.</li>
                 </ul>
             </div>
         </div>
-        <div class="step">
-            <div class="step-number">5</div>
-            <div class="step-content">
-                <h5>Panen</h5>
-                <ul class="steps-list">
+         <div class="step" onclick="toggleStep(this)">
+    <div class="step-header">
+        <div class="step-number">5</div>
+        <h5>Panen</h5>
+    </div>
+    <div class="step-content">
+        <ul class="steps-list">
                     <li>Tebang tebu saat rendemen gula mencapai maksimal.</li>
                     <li>Potong serapat mungkin dengan tanah (pangkal manis).</li>
                 </ul>
@@ -417,6 +490,22 @@
             wrapper.appendChild(clone);
         });
     }
+    // Fungsi untuk toggle dropdown
+function toggleStep(element) {
+    // Menutup step lain yang sedang terbuka (Opsional, hapus jika ingin bisa buka banyak sekaligus)
+    /*
+    const allSteps = document.querySelectorAll('.step');
+    allSteps.forEach(step => {
+        if(step !== element) step.classList.remove('active');
+    });
+    */
+
+    // Toggle class active pada elemen yang diklik
+    element.classList.toggle('active');
+}
+
+// Pastikan fungsi renderCards tetap berjalan seperti biasa, 
+// karena struktur internalnya sudah kita siapkan di template.
 </script>
 </body>
 </html>
