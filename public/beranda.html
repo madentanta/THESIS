@@ -591,12 +591,11 @@ window.addEventListener('load', () => {
 // =========================================================================
 // === LOGIKA PENGAMBILAN PROFIL DARI API ===
 
-async function fetchUserProfile(token) {
-    if (profileFetched) return; // Jika sudah diambil, keluar
 
-    // Tampilkan loading state di popup
+async function fetchUserProfile(token) {
+    if (profileFetched) return; 
+
     popupLoading.classList.remove('hidden-btn'); 
-    popupUsername.textContent = username || "User";
     popupEmail.textContent = "Mengambil...";
 
     try {
@@ -604,27 +603,30 @@ async function fetchUserProfile(token) {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'Authorization': `Bearer ${token}`
             }
         });
 
         const data = await res.json();
 
-        if (res.status !== 200) {
+        if (!res.ok) {
             throw new Error(data.message || "Gagal mengambil data profil.");
         }
 
-        userEmail = data.email || "Email tidak ditemukan"; // Ambil email dari respons API
+        // Ambil data langsung dari respon API agar selalu update
+        userEmail = data.email || "Email tidak ditemukan";
+        const currentUsername = data.username || username || "User";
+        
         profileFetched = true;
         
-        // Perbarui tampilan popup dengan data yang sebenarnya
-        popupUsername.textContent = username || "User";
+        // Perbarui tampilan dengan data terbaru dari database
+        popupUsername.textContent = currentUsername;
         popupEmail.textContent = userEmail;
-        popupLoading.classList.add('hidden-btn'); // Sembunyikan loading
+        popupLoading.classList.add('hidden-btn'); 
 
     } catch (error) {
         console.error("Error mengambil profil:", error);
-        popupUsername.textContent = username || "User";
         popupEmail.textContent = "Gagal memuat email.";
         popupLoading.classList.add('hidden-btn');
     }
