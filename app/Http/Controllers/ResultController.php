@@ -56,7 +56,7 @@ class ResultController extends Controller
 
         try {
             // 3. Panggil AI
-            $aiResponse = Http::timeout(60)->retry(2, 1000)->post("https://ai:8001/inference", [
+            $aiResponse = Http::timeout(60)->retry(2, 1000)->post("http://ai:8001/inference", [
                 "input_data" => [[
                     "soil_ph"       => (float) $inputData->soil_ph,
                     "temperature"   => (float) $inputData->temperature,
