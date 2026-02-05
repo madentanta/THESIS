@@ -12,45 +12,117 @@ class DatasetController extends Controller
     /**
      * UPLOAD DATASET (APPEND MODE)
      */
-    public function upload(Request $req)
-    {
-        $req->validate([
-            "file" => "required|mimes:xlsx,xls"
-        ]);
+public function upload(Request $req)
+{
+    $req->validate([
+        "file" => "required|mimes:xlsx,xls"
+    ]);
 
-        $path = $req->file("file")->store("tmp");
+    $path = $req->file("file")->store("tmp");
+    $fullPath = storage_path("app/" . $path);
 
-        $sheet = IOFactory::load(storage_path("app/" . $path))
-            ->getActiveSheet()
-            ->toArray();
+    $sheet = IOFactory::load($fullPath)
+        ->getActiveSheet()
+        ->toArray();
 
-        $inserted = 0;
+    $buffer   = [];
+    $inserted = 0;
+    $skipped  = 0;
 
+    DB::beginTransaction();
+
+    try {
         foreach ($sheet as $i => $row) {
+
+            // Skip header
             if ($i === 0) continue;
-            if (empty($row[0])) continue;
 
-            DB::table("dataset_tanaman")->insert([
-                "nama_daerah"   => $row[0] ?? null,
-                "fertility"     => $row[1] ?? null,
-                "moisture"      => $row[2] ?? null,
-                "ph"            => $row[3] ?? null,
-                "temp"          => $row[4] ?? null,
-                "sunlight"      => $row[5] ?? null,
-                "humidity"      => $row[6] ?? null,
-                "kecamatan"     => $row[7] ?? null,
-                "nama_tanaman"  => $row[8] ?? null,
-                "created_at"    => now()
-            ]);
+            // Minimal kolom wajib
+            if (
+                empty($row[0]) || // nama_daerah
+                empty($row[7]) || // kecamatan
+                empty($row[8])    // nama_tanaman
+            ) {
+                $skipped++;
+                continue;
+            }
 
-            $inserted++;
+            // Validasi numerik
+            if (
+                !is_numeric($row[1]) || // fertility
+                !is_numeric($row[2]) || // moisture
+                !is_numeric($row[3]) || // ph
+                !is_numeric($row[4]) || // temp
+                !is_numeric($row[5]) || // sunlight
+                !is_numeric($row[6])    // humidity
+            ) {
+                $skipped++;
+                continue;
+            }
+
+            // Validasi range (sesuai dataset ML)
+            if (
+                $row[3] < 0 || $row[3] > 14 ||        // pH
+                $row[1] < 0 || $row[1] > 1 ||         // fertility
+                $row[2] < 0 || $row[2] > 1 ||         // moisture
+                $row[5] < 0 || $row[5] > 1 ||         // sunlight
+                $row[6] < 0 || $row[6] > 1             // humidity
+            ) {
+                $skipped++;
+                continue;
+            }
+
+            $buffer[] = [
+                "nama_daerah"  => trim($row[0]),
+                "fertility"    => (float) $row[1],
+                "moisture"     => (float) $row[2],
+                "ph"           => (float) $row[3],
+                "temp"         => (float) $row[4],
+                "sunlight"     => (float) $row[5],
+                "humidity"     => (float) $row[6],
+                "kecamatan"    => trim($row[7]),
+                "nama_tanaman" => trim($row[8]),
+                "created_at"   => now()
+            ];
+
+            // Batch insert tiap 500 row
+            if (count($buffer) >= 500) {
+                DB::table("dataset_tanaman")->insert($buffer);
+                $inserted += count($buffer);
+                $buffer = [];
+            }
         }
 
+        // Insert sisa buffer
+        if (!empty($buffer)) {
+            DB::table("dataset_tanaman")->insert($buffer);
+            $inserted += count($buffer);
+        }
+
+        DB::commit();
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        unlink($fullPath);
+
         return response()->json([
-            "message"  => "Dataset berhasil di-upload (append mode)",
-            "inserted" => $inserted
-        ], Response::HTTP_OK);
+            "status"  => "error",
+            "message" => "Gagal upload dataset",
+            "detail"  => $e->getMessage()
+        ], 400);
     }
+
+    // Hapus file Excel
+    unlink($fullPath);
+
+    return response()->json([
+        "status"   => "success",
+        "message"  => "Dataset berhasil di-upload (append mode)",
+        "inserted" => $inserted,
+        "skipped"  => $skipped
+    ], Response::HTTP_OK);
+}
+
 
 
     /**
