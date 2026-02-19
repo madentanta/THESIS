@@ -6,6 +6,8 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Illuminate\Console\Scheduling\Schedule;
+
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -66,5 +68,13 @@ return Application::configure(basePath: dirname(__DIR__))
             return null;
         });
 
+    }
+    )
+    ->withSchedule(function (Schedule $schedule) {
+    $schedule->command('report:ai-trend')
+        ->weekly()
+        ->sundays()
+        ->at('08:00');
     })
+
     ->create();
